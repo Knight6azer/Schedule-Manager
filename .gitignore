@@ -1,3 +1,12 @@
+# Bytes
 __pycache__/
 *.pyc
+
+# Database
+instance/
+*.db
 schedule_data.json
+
+# Environment
+.env
+venv/
