@@ -1,70 +1,70 @@
-# Schedule Manager 📅
+# Schedule Manager
 
-A lightweight, Command-Line Interface (CLI) productivity tool built with **Python** to manage daily tasks efficiently with persistent **JSON storage**.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.x-blue.svg)
+![Flask](https://img.shields.io/badge/flask-2.x-green.svg)
 
-## 📌 Project Overview
+A robust, full-fledged web application for managing tasks and schedules. Built with Python (Flask) and SQLite, this project offers a modern user interface to help you stay organized.
 
-The **Schedule Manager** is designed to streamline personal task organization. It provides a robust framework for tracking activities, setting due dates, and managing task priorities through a terminal-based interface.
+## 🚀 Features
 
-### **Key Features**
-
-* **Full CRUD Operations**: Create, Read, Update, and Delete tasks seamlessly.
-* **Data Persistence**: All tasks are automatically saved to a `schedule_data.json` file, ensuring no data is lost between sessions.
-* **Upcoming Task Alerts**: Filter and view tasks due within a specific time window (e.g., the next 7 days).
-* **Status Tracking**: Mark tasks as completed with visual indicators.
-* **Error Handling**: Built-in validation for date formats and user input to prevent application crashes.
+-   **Dashboard View**: Get a clear overview of upcoming tasks, sorted by priority and due date.
+-   **Task Management**: Easily add, edit, delete, and mark tasks as complete.
+-   **Priority Levels**: Categorize tasks by High, Medium, or Low priority.
+-   **Data Persistence**: Uses a reliable SQLite database to store your schedule.
+-   **Responsive Design**: A clean, modern UI that works on desktop and mobile.
 
 ## 🛠️ Tech Stack
 
-* **Language**: Python 3.6+
-* **Storage**: JSON Serialization
-* **Libraries**: `datetime` (time tracking), `os` (file handling), `json` (data storage).
+-   **Backend**: Python, Flask, SQLAlchemy
+-   **Database**: SQLite
+-   **Frontend**: HTML5, CSS3 (Custom + Responsive), JavaScript
+-   **Deployment**: Ready for Render/Heroku (Gunicorn support)
 
-## 📐 System Architecture
+## 📦 Installation
 
-The project follows a **Modular OOP (Object-Oriented Programming)** approach:
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/Knight6azer/Schedule-Manager.git
+    cd Schedule-Manager
+    ```
 
-* **Task Class**: Handles individual task objects, including title, description, priority, and timestamps.
-* **ScheduleManager Class**: The engine of the app, containing the logic for task manipulation and JSON I/O.
-* **Main Loop**: A continuous interface loop that processes user commands.
+2.  **Create a virtual environment (optional but recommended):**
+    ```bash
+    python -m venv venv
+    # Windows
+    venv\Scripts\activate
+    # macOS/Linux
+    source venv/bin/activate
+    ```
 
-## 🚀 Getting Started
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-1. **Clone the repo:**
-```bash
-git clone https://github.com/your-username/Schedule-Manager-Python.git
-```
+4.  **Run the application:**
+    ```bash
+    python app.py
+    ```
 
-2. **Run the application:**
-```bash
-python schedule_manager.py
-```
+5.  **Access the app:**
+    Open your browser and navigate to `http://127.0.0.1:5000`.
 
----
+## ☁️ Deployment
 
-## 💼 Portfolio / LinkedIn Profile Showcase
+This project includes a `Procfile` and is configured for easy deployment on platforms like Render or Heroku.
 
-*(Use this text for your "Projects" section on LinkedIn or your personal website)*
+### Deploy on Render
+1.  Connect your GitHub repository to Render.
+2.  Select "Web Service".
+3.  Set the **Start Command** to: `gunicorn app:app`.
+4.  Deploy!
 
-### **Schedule Manager | Python Developer**
+## 🤝 Contributing
 
-**Electronics & Computer Science Engineering Project (Sem IV)**
+Contributions are welcome! Please fork the repository and submit a pull request for any improvements.
 
-**Project Summary:**
-Developed a command-line productivity application to automate task scheduling and tracking. The tool allows users to manage a dynamic list of tasks with specified deadlines and priorities, stored locally in a structured JSON format.
+## 📄 License
 
-**Impact & Learnings:**
-
-* **Data Management**: Implemented serialization and deserialization using the JSON library to maintain persistent state.
-* **Algorithm Logic**: Built logic to filter and retrieve "Upcoming Tasks" based on time deltas, enhancing user time management.
-* **Software Design**: Applied modular programming principles to ensure the code is extensible for future GUI (PyQt/Tkinter) integration.
-
-**Core Competencies**: Python Programming, JSON Data Handling, Object-Oriented Design (OOD), CRUD Logic.
-
----
-
-## 📝 Future Enhancement Ideas
-
-* **GUI Integration**: Upgrading the interface to a graphical window using **Tkinter** or **PyQt**.
-* **Cloud Sync**: Integrating with **Google Calendar API** to sync tasks across platforms.
-* **Notifications**: Adding desktop reminder alerts for tasks reaching their due date.
+This project is open-source and available under the MIT License.
