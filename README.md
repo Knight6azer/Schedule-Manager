@@ -88,6 +88,14 @@ The application exposes a REST API at `/api/tasks`. Standard authentication is r
 *   `PUT /api/tasks/<id>`: Update a task.
 *   `DELETE /api/tasks/<id>`: Delete a task.
 
+## 🚀 Deployment (Vercel)
+The project includes a `vercel.json` configuration for easy deployment on Vercel.
+
+1.  **Install Vercel CLI**: `npm install -g vercel`
+2.  **Deploy**: Run `vercel` in the project directory.
+
+> **Note**: The background scheduler (`Flask-APScheduler`) may have limitations on serverless platforms like Vercel due to execution time limits.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request.
