@@ -96,6 +96,8 @@ The project includes a `vercel.json` configuration for easy deployment on Vercel
 
 > **Note**: The background scheduler (`Flask-APScheduler`) may have limitations on serverless platforms like Vercel due to execution time limits.
 
+> **Important**: On Vercel, the SQLite database is stored in `/tmp` (ephemeral storage). **Data will be lost** when the function restarts. For production, please configure a `DATABASE_URL` environment variable pointing to a PostgreSQL database (e.g., Vercel Postgres, Supabase, or Neon).
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request.
