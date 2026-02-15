@@ -1,31 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 0 auto;">
-    <h1 style="margin-bottom: 1.5rem;">{{ 'Edit Task' if task else 'New Task' }}</h1>
+<div class="auth-container" style="min-height: auto; margin-top: 2rem;">
+    <div class="card" style="width: 100%; max-width: 700px;">
+        <div class="task-header" style="margin-bottom: 2rem;">
+            <h1
+                style="background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                {{ 'Edit Task' if task else 'New Task' }}
+            </h1>
+        </div>
 
-    <div class="card">
         <form method="POST">
             <div class="form-group">
-                <label for="title">Title</label>
+                <label for="title">Task Title</label>
                 <input type="text" id="title" name="title" value="{{ task.title if task else '' }}" required
-                    placeholder="e.g. Finish Project Report">
+                    placeholder="e.g. Finish Project Report" autofocus>
             </div>
 
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4"
+                <textarea id="description" name="description" rows="5"
                     placeholder="Add details...">{{ task.description if task else '' }}</textarea>
             </div>
 
-            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div>
                     <label for="priority">Priority</label>
                     <select id="priority" name="priority">
-                        <option value="High" {% if task and task.priority=='High' %}selected{% endif %}>High</option>
+                        <option value="High" {% if task and task.priority=='High' %}selected{% endif %}>High 🔥</option>
                         <option value="Medium" {% if task and task.priority=='Medium' %}selected{% endif %}{% if not
-                            task %}selected{% endif %}>Medium</option>
-                        <option value="Low" {% if task and task.priority=='Low' %}selected{% endif %}>Low</option>
+                            task %}selected{% endif %}>Medium ⚡</option>
+                        <option value="Low" {% if task and task.priority=='Low' %}selected{% endif %}>Low ☕</option>
                     </select>
                 </div>
                 <div>
@@ -35,17 +40,18 @@
                 </div>
             </div>
 
-            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
                 <div>
                     <label for="category">Category</label>
                     <select id="category" name="category">
-                        <option value="General" {% if task and task.category=='General' %}selected{% endif %}>General
+                        <option value="General" {% if task and task.category=='General' %}selected{% endif %}>General 📝
                         </option>
-                        <option value="Work" {% if task and task.category=='Work' %}selected{% endif %}>Work</option>
+                        <option value="Work" {% if task and task.category=='Work' %}selected{% endif %}>Work 💼</option>
                         <option value="Personal" {% if task and task.category=='Personal' %}selected{% endif %}>Personal
+                            🏠</option>
+                        <option value="Study" {% if task and task.category=='Study' %}selected{% endif %}>Study 📚
                         </option>
-                        <option value="Study" {% if task and task.category=='Study' %}selected{% endif %}>Study</option>
-                        <option value="Health" {% if task and task.category=='Health' %}selected{% endif %}>Health
+                        <option value="Health" {% if task and task.category=='Health' %}selected{% endif %}>Health 💪
                         </option>
                     </select>
                 </div>
@@ -53,10 +59,10 @@
                 <div>
                     <label for="status">Status</label>
                     <select id="status" name="status">
-                        <option value="Pending" {% if task.status=='Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Pending" {% if task.status=='Pending' %}selected{% endif %}>Pending ⏳</option>
                         <option value="In Progress" {% if task.status=='In Progress' %}selected{% endif %}>In Progress
-                        </option>
-                        <option value="Completed" {% if task.status=='Completed' %}selected{% endif %}>Completed
+                            🚧</option>
+                        <option value="Completed" {% if task.status=='Completed' %}selected{% endif %}>Completed ✅
                         </option>
                     </select>
                 </div>
@@ -64,10 +70,11 @@
             </div>
 
             <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary" style="flex: 1;">{{ 'Save Changes' if task else 'Create
-                    Task' }}</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1; padding: 1rem;">
+                    {{ 'Save Changes' if task else 'Create Task' }}
+                </button>
                 <a href="{{ url_for('main.index') }}" class="btn"
-                    style="background: var(--border); color: var(--text-main);">Cancel</a>
+                    style="background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border);">Cancel</a>
             </div>
         </form>
     </div>

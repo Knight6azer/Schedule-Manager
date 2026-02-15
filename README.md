@@ -1,33 +1,33 @@
 
-# Schedule Manager V2
+# Schedule Manager V2 (Neon Edition)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.x-blue.svg)
 ![Flask](https://img.shields.io/badge/flask-3.x-green.svg)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 
-A professional, industry-standard task management application built with Flask. This project demonstrates a full-stack web application architecture with user authentication, database management, and a RESTful API.
+A professional, industry-standard task management application built with Flask. Recently upgraded with a **stunning Blue-Violet Neon interface** featuring glassmorphism and modern design principles.
 
 ## 🚀 Key Features
 
-*   **User Authentication**: Secure Login and Registration system using `Flask-Login` and password hashing. Data is private to each user.
-*   **Modular Architecture**: Structured using Flask Blueprints (`auth`, `main`, `api`) for scalability and maintainability.
+*   **User Authentication**: Secure Login and Registration system using `Flask-Login` and password hashing.
+*   **Neon Dark Theme**: A futuristic, high-contrast UI with neon glows and glassmorphism transparency effects.
+*   **Modular Architecture**: Structured using Flask Blueprints (`auth`, `main`, `api`) for scalability.
 *   **Task Management**:
     *   Create, Read, Update, Delete (CRUD) tasks.
-    *   **Priorities**: High, Medium, Low.
+    *   **Priorities**: High, Medium, Low (Color-coded).
     *   **Categories**: Work, Personal, Study, Health.
     *   **Status Tracking**: Pending, In Progress, Completed.
     *   **Due Dates**: Track deadlines efficiently.
-*   **RESTful API**: Fully functional JSON API for external integrations (e.g., mobile apps).
-*   **Background Scheduler**: Integrated `Flask-APScheduler` infrastructure for future automated tasks (reminders, cleanup).
-*   **Responsive UI**: Modern, clean interface adapted for all devices.
+*   **RESTful API**: Fully functional JSON API for external integrations.
+*   **Background Scheduler**: Integrated `Flask-APScheduler` infrastructure.
 
 ## 🛠️ Tech Stack
 
 *   **Backend**: Python, Flask, Flask-SQLAlchemy, Flask-Login, Flask-APScheduler
 *   **Database**: SQLite (Development), PostgreSQL (Production ready)
-*   **Frontend**: HTML5, CSS3, Jinja2 Templates
-*   **API**: REST with JSON responses
+*   **Frontend**: HTML5, CSS3 (Custom Neon Theme), Jinja2 Templates
+*   **Font**: Outfit (Google Fonts)
 
 ## 📂 Project Structure
 
@@ -41,7 +41,7 @@ project/
 │   ├── main/            # Core Application Blueprint
 │   ├── api/             # API Blueprint
 │   ├── templates/       # HTML Templates
-│   └── static/          # CSS, JS, Images
+│   └── static/          # CSS (Neon Theme), JS
 ├── config.py            # Configuration settings
 ├── run.py               # Entry point
 └── requirements.txt     # Dependencies
@@ -75,14 +75,13 @@ project/
     ```bash
     python run.py
     ```
-    *The database will be automatically created on the first run.*
 
 5.  **Access the app:**
     Open `http://127.0.0.1:5000` in your browser.
 
 ## 🔌 API Documentation
 
-The application exposes a REST API at `/api/tasks`. Standard authentication is required (currently session-based for browser).
+The application exposes a REST API at `/api/tasks`. Standard authentication is required.
 
 *   `GET /api/tasks`: List all tasks.
 *   `POST /api/tasks`: Create a new task.

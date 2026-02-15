@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="dashboard-header"
-    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+<div class="dashboard-header">
     <div>
-        <h1>My Tasks</h1>
-        <p class="text-muted" style="color: var(--text-muted);">Welcome, {{ current_user.username }}! Manage your
-            schedule efficiently.</p>
+        <h1>My Schedule</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Welcome back, <span style="color: var(--secondary);">{{
+                current_user.username }}</span>. You have {{ tasks|length }} tasks.</p>
     </div>
     <div>
-        <!-- Stats or filters could go here -->
+        <a href="{{ url_for('main.add_task') }}" class="btn btn-primary">
+            <span style="font-size: 1.2rem; margin-right: 0.5rem;">+</span> New Task
+        </a>
     </div>
 </div>
 
@@ -17,26 +18,50 @@
     {% if tasks %}
     {% for task in tasks %}
     <div class="card task-card"
-        style="border-left: 4px solid {% if task.status == 'Completed' %}var(--secondary){% else %}var(--primary){% endif %};">
+        style="border-left-color: {% if task.priority == 'High' %}var(--accent){% elif task.priority == 'Medium' %}#f59e0b{% else %}var(--secondary){% endif %};">
         <div class="task-header">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <a href="{{ url_for('main.complete_task', id=task.id) }}"
-                    style="color: {% if task.status == 'Completed' %}var(--secondary){% else %}var(--border){% endif %}; font-size: 1.5rem; text-decoration: none;">
-                    {% if task.status == 'Completed' %}◉{% else %}○{% endif %}
+                    style="color: {% if task.status == 'Completed' %}var(--secondary){% else %}var(--text-muted){% endif %}; font-size: 1.5rem; text-decoration: none; transition: all 0.3s;">
+                    {% if task.status == 'Completed' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    {% endif %}
                 </a>
                 <h3 class="task-title {% if task.status == 'Completed' %}completed{% endif %}">{{ task.title }}</h3>
             </div>
             <span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
         </div>
 
-        <p>{{ task.description }}</p>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem; padding-left: 2.5rem;">{{ task.description }}</p>
 
-        <div class="task-meta">
-            <span>Due: {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'No Date' }}</span>
-            <span class="badge" style="background: #eee; color: #333;">{{ task.category }}</span>
+        <div class="task-meta" style="padding-left: 2.5rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    {{ task.due_date.strftime('%b %d, %Y') if task.due_date else 'No Date' }}
+                </span>
+                <span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-muted);">{{
+                    task.category }}</span>
+            </div>
+
             <div class="actions">
                 <a href="{{ url_for('main.edit_task', id=task.id) }}" class="btn btn-sm"
-                    style="background: var(--border);">Edit</a>
+                    style="background: rgba(255,255,255,0.05); color: var(--text-main);">Edit</a>
                 <a href="{{ url_for('main.delete_task', id=task.id) }}" class="btn btn-sm btn-danger"
                     onclick="return confirm('Are you sure?')">Delete</a>
             </div>
@@ -44,9 +69,10 @@
     </div>
     {% endfor %}
     {% else %}
-    <div class="card" style="text-align: center; padding: 3rem;">
-        <h3>No tasks found</h3>
-        <p class="text-muted" style="margin-bottom: 1rem;">Get started by adding a new task to your schedule.</p>
+    <div class="card" style="text-align: center; padding: 4rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+        <h3 style="margin-bottom: 0.5rem;">No tasks found</h3>
+        <p class="text-muted" style="margin-bottom: 2rem;">Get started by adding a new task to your schedule.</p>
         <a href="{{ url_for('main.add_task') }}" class="btn btn-primary">Create First Task</a>
     </div>
     {% endif %}
