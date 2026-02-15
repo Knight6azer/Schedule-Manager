@@ -1,12 +1,32 @@
-# Bytes
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Database
 instance/
 *.db
+*.sqlite3
 schedule_data.json
 
-# Environment
-.env
-venv/
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# System
+.DS_Store
+Thumbs.db

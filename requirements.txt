@@ -1,3 +1,7 @@
+
 flask
 flask-sqlalchemy
+flask-login
+flask-apscheduler
+email-validator
 gunicorn

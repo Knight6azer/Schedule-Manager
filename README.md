@@ -1,27 +1,53 @@
-# Schedule Manager
+
+# Schedule Manager V2
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.x-blue.svg)
-![Flask](https://img.shields.io/badge/flask-2.x-green.svg)
+![Flask](https://img.shields.io/badge/flask-3.x-green.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
 
-A robust, full-fledged web application for managing tasks and schedules. Built with Python (Flask) and SQLite, this project offers a modern user interface to help you stay organized.
+A professional, industry-standard task management application built with Flask. This project demonstrates a full-stack web application architecture with user authentication, database management, and a RESTful API.
 
-## 🚀 Features
+## 🚀 Key Features
 
--   **Dashboard View**: Get a clear overview of upcoming tasks, sorted by priority and due date.
--   **Task Management**: Easily add, edit, delete, and mark tasks as complete.
--   **Priority Levels**: Categorize tasks by High, Medium, or Low priority.
--   **Data Persistence**: Uses a reliable SQLite database to store your schedule.
--   **Responsive Design**: A clean, modern UI that works on desktop and mobile.
+*   **User Authentication**: Secure Login and Registration system using `Flask-Login` and password hashing. Data is private to each user.
+*   **Modular Architecture**: Structured using Flask Blueprints (`auth`, `main`, `api`) for scalability and maintainability.
+*   **Task Management**:
+    *   Create, Read, Update, Delete (CRUD) tasks.
+    *   **Priorities**: High, Medium, Low.
+    *   **Categories**: Work, Personal, Study, Health.
+    *   **Status Tracking**: Pending, In Progress, Completed.
+    *   **Due Dates**: Track deadlines efficiently.
+*   **RESTful API**: Fully functional JSON API for external integrations (e.g., mobile apps).
+*   **Background Scheduler**: Integrated `Flask-APScheduler` infrastructure for future automated tasks (reminders, cleanup).
+*   **Responsive UI**: Modern, clean interface adapted for all devices.
 
 ## 🛠️ Tech Stack
 
--   **Backend**: Python, Flask, SQLAlchemy
--   **Database**: SQLite
--   **Frontend**: HTML5, CSS3 (Custom + Responsive), JavaScript
--   **Deployment**: Ready for Render/Heroku (Gunicorn support)
+*   **Backend**: Python, Flask, Flask-SQLAlchemy, Flask-Login, Flask-APScheduler
+*   **Database**: SQLite (Development), PostgreSQL (Production ready)
+*   **Frontend**: HTML5, CSS3, Jinja2 Templates
+*   **API**: REST with JSON responses
 
-## 📦 Installation
+## 📂 Project Structure
+
+```
+project/
+├── app/
+│   ├── __init__.py      # Application Factory
+│   ├── models.py        # Database Models (User, Task)
+│   ├── extensions.py    # Flask Extensions
+│   ├── auth/            # Authentication Blueprint
+│   ├── main/            # Core Application Blueprint
+│   ├── api/             # API Blueprint
+│   ├── templates/       # HTML Templates
+│   └── static/          # CSS, JS, Images
+├── config.py            # Configuration settings
+├── run.py               # Entry point
+└── requirements.txt     # Dependencies
+```
+
+## 📦 Installation & Setup
 
 1.  **Clone the repository:**
     ```bash
@@ -29,12 +55,14 @@ A robust, full-fledged web application for managing tasks and schedules. Built w
     cd Schedule-Manager
     ```
 
-2.  **Create a virtual environment (optional but recommended):**
+2.  **Create and activate a virtual environment:**
     ```bash
-    python -m venv venv
     # Windows
+    python -m venv venv
     venv\Scripts\activate
+
     # macOS/Linux
+    python3 -m venv venv
     source venv/bin/activate
     ```
 
@@ -45,26 +73,26 @@ A robust, full-fledged web application for managing tasks and schedules. Built w
 
 4.  **Run the application:**
     ```bash
-    python app.py
+    python run.py
     ```
+    *The database will be automatically created on the first run.*
 
 5.  **Access the app:**
-    Open your browser and navigate to `http://127.0.0.1:5000`.
+    Open `http://127.0.0.1:5000` in your browser.
 
-## ☁️ Deployment
+## 🔌 API Documentation
 
-This project includes a `Procfile` and is configured for easy deployment on platforms like Render or Heroku.
+The application exposes a REST API at `/api/tasks`. Standard authentication is required (currently session-based for browser).
 
-### Deploy on Render
-1.  Connect your GitHub repository to Render.
-2.  Select "Web Service".
-3.  Set the **Start Command** to: `gunicorn app:app`.
-4.  Deploy!
+*   `GET /api/tasks`: List all tasks.
+*   `POST /api/tasks`: Create a new task.
+*   `PUT /api/tasks/<id>`: Update a task.
+*   `DELETE /api/tasks/<id>`: Delete a task.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request for any improvements.
+Contributions are welcome! Please fork the repository and submit a pull request.
 
 ## 📄 License
 
-This project is open-source and available under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
