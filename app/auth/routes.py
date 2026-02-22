@@ -39,7 +39,7 @@ def login():
             return render_template('login.html')
 
         if user and user.check_password(password):
-            login_user(user)
+            login_user(user, remember=True)
             # Validate 'next' to prevent open redirects AND redirect loops
             next_page = request.args.get('next')
             if next_page and is_safe_url(next_page):
