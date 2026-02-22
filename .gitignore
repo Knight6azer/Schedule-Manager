@@ -27,6 +27,14 @@ schedule_data.json
 htmlcov/
 .pytest_cache/
 
+# Node (Vercel CLI)
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.*
+
 # System
 .DS_Store
 Thumbs.db

@@ -1,107 +1,163 @@
 
-# Schedule Manager V2 (Neon Edition)
+# Schedule Manager V2 — Neon Edition
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.x-blue.svg)
 ![Flask](https://img.shields.io/badge/flask-3.x-green.svg)
+![Deployed on Vercel](https://img.shields.io/badge/deployed%20on-Vercel-black?logo=vercel)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 
-A professional, industry-standard task management application built with Flask. Recently upgraded with a **stunning Blue-Violet Neon interface** featuring glassmorphism and modern design principles.
+A professional, full-featured task management web application built with **Python & Flask**. Features a stunning **Blue-Violet Neon** dark theme with glassmorphism effects, per-user task isolation via authentication, and a RESTful API.
+
+---
 
 ## 🚀 Key Features
 
-*   **User Authentication**: Secure Login and Registration system using `Flask-Login` and password hashing.
-*   **Neon Dark Theme**: A futuristic, high-contrast UI with neon glows and glassmorphism transparency effects.
-*   **Modular Architecture**: Structured using Flask Blueprints (`auth`, `main`, `api`) for scalability.
-*   **Task Management**:
-    *   Create, Read, Update, Delete (CRUD) tasks.
-    *   **Priorities**: High, Medium, Low (Color-coded).
-    *   **Categories**: Work, Personal, Study, Health.
-    *   **Status Tracking**: Pending, In Progress, Completed.
-    *   **Due Dates**: Track deadlines efficiently.
-*   **RESTful API**: Fully functional JSON API for external integrations.
-*   **Background Scheduler**: Integrated `Flask-APScheduler` infrastructure.
+- **User Authentication** — Secure registration & login via `Flask-Login` and Werkzeug password hashing.
+- **Per-User Task Isolation** — Every user sees only their own tasks.
+- **Neon Dark Theme** — Futuristic Blue-Violet UI with neon glows, glassmorphism, and smooth transitions. Font: *Outfit* (Google Fonts).
+- **Modular Blueprint Architecture** — Clean separation via `auth`, `main`, and `api` Blueprints.
+- **Full Task CRUD**:
+  - Create, Read, Update, Delete tasks.
+  - **Priority**: High · Medium · Low (color-coded).
+  - **Category**: Work · Personal · Study · Health.
+  - **Status**: Pending · In Progress · Completed.
+  - **Due Date** tracking.
+  - **Reminder Time** field.
+- **RESTful JSON API** — Available at `/api/tasks` for external integrations.
+- **APScheduler Integration** — Background scheduler infrastructure (gracefully disabled on serverless).
+- **Vercel-Ready** — Includes `vercel.json`, session-cookie hardening, and ephemeral `/tmp` DB fallback.
+
+---
 
 ## 🛠️ Tech Stack
 
-*   **Backend**: Python, Flask, Flask-SQLAlchemy, Flask-Login, Flask-APScheduler
-*   **Database**: SQLite (Development), PostgreSQL (Production ready)
-*   **Frontend**: HTML5, CSS3 (Custom Neon Theme), Jinja2 Templates
-*   **Font**: Outfit (Google Fonts)
+| Layer | Technology |
+|-------|-----------|
+| Backend | Python 3, Flask, Flask-SQLAlchemy, Flask-Login, Flask-APScheduler |
+| Database | SQLite (local) · PostgreSQL (production via `DATABASE_URL`) |
+| Frontend | HTML5, CSS3 (Custom Neon Theme), Jinja2 |
+| Auth | Werkzeug password hashing, `flask-login`, `email-validator` |
+| Deployment | Vercel (serverless), Gunicorn (traditional) |
+
+---
 
 ## 📂 Project Structure
 
 ```
-project/
+Schedule Manager (Py)/
 ├── app/
-│   ├── __init__.py      # Application Factory
-│   ├── models.py        # Database Models (User, Task)
-│   ├── extensions.py    # Flask Extensions
-│   ├── auth/            # Authentication Blueprint
-│   ├── main/            # Core Application Blueprint
-│   ├── api/             # API Blueprint
-│   ├── templates/       # HTML Templates
-│   └── static/          # CSS (Neon Theme), JS
-├── config.py            # Configuration settings
-├── run.py               # Entry point
-└── requirements.txt     # Dependencies
+│   ├── __init__.py          # Application factory (create_app)
+│   ├── extensions.py        # Shared Flask extensions (db, login_manager, scheduler)
+│   ├── models.py            # SQLAlchemy models: User, Task
+│   ├── auth/
+│   │   └── routes.py        # /auth/login, /auth/register, /auth/logout
+│   ├── main/
+│   │   └── routes.py        # / (dashboard), /add, /edit/<id>, /delete/<id>, ...
+│   ├── api/
+│   │   └── routes.py        # /api/tasks (CRUD JSON API)
+│   ├── templates/           # Jinja2 HTML templates
+│   └── static/              # CSS (Neon theme), JS
+├── config.py                # Config class (SECRET_KEY, DB URI, session cookies)
+├── run.py                   # Entry point — calls create_app()
+├── vercel.json              # Vercel serverless deployment config
+├── Procfile                 # For Gunicorn / traditional hosting
+├── requirements.txt         # Python dependencies
+└── schedule_v2.db           # Local SQLite DB (auto-created, git-ignored)
 ```
 
-## 📦 Installation & Setup
+---
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/Knight6azer/Schedule-Manager.git
-    cd Schedule-Manager
-    ```
+## 📦 Installation & Local Setup
 
-2.  **Create and activate a virtual environment:**
-    ```bash
-    # Windows
-    python -m venv venv
-    venv\Scripts\activate
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Knight6azer/Schedule-Manager.git
+   cd Schedule-Manager
+   ```
 
-    # macOS/Linux
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
+2. **Create & activate a virtual environment:**
+   ```bash
+   # Windows
+   python -m venv venv
+   venv\Scripts\activate
 
-3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+   # macOS / Linux
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
-4.  **Run the application:**
-    ```bash
-    python run.py
-    ```
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-5.  **Access the app:**
-    Open `http://127.0.0.1:5000` in your browser.
+4. **Run locally:**
+   ```bash
+   python run.py
+   ```
 
-## 🔌 API Documentation
+5. **Open in browser:** `http://127.0.0.1:5000`
 
-The application exposes a REST API at `/api/tasks`. Standard authentication is required.
+---
 
-*   `GET /api/tasks`: List all tasks.
-*   `POST /api/tasks`: Create a new task.
-*   `PUT /api/tasks/<id>`: Update a task.
-*   `DELETE /api/tasks/<id>`: Delete a task.
+## 🔌 API Reference
 
-## 🚀 Deployment (Vercel)
-The project includes a `vercel.json` configuration for easy deployment on Vercel.
+All API endpoints require an authenticated session. Responses are JSON.
 
-1.  **Install Vercel CLI**: `npm install -g vercel`
-2.  **Deploy**: Run `vercel` in the project directory.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tasks` | List all tasks for the logged-in user |
+| `POST` | `/api/tasks` | Create a new task |
+| `PUT` | `/api/tasks/<id>` | Update an existing task |
+| `DELETE` | `/api/tasks/<id>` | Delete a task |
 
-> **Note**: The background scheduler (`Flask-APScheduler`) may have limitations on serverless platforms like Vercel due to execution time limits.
+**Task JSON Schema:**
+```json
+{
+  "id": 1,
+  "title": "Finish report",
+  "description": "Q4 summary",
+  "priority": "High",
+  "category": "Work",
+  "status": "In Progress",
+  "due_date": "2025-12-31",
+  "reminder_time": null,
+  "created_at": "2025-02-15T10:00:00",
+  "updated_at": "2025-02-15T10:00:00",
+  "user_id": 1
+}
+```
 
-> **Important**: On Vercel, the SQLite database is stored in `/tmp` (ephemeral storage). **Data will be lost** when the function restarts. For production, please configure a `DATABASE_URL` environment variable pointing to a PostgreSQL database (e.g., Vercel Postgres, Supabase, or Neon).
+---
+
+## 🚀 Deployment — Vercel
+
+The project ships with a `vercel.json` configuration. Important notes:
+
+- **Session Cookies** — `config.py` automatically sets `SESSION_COOKIE_SECURE=True` and `SESSION_COOKIE_SAMESITE='Lax'` when the `VERCEL` environment variable is detected, preventing the login-loop issue on HTTPS.
+- **Database** — On Vercel, SQLite is stored at `/tmp/schedule_v2.db` (ephemeral). **Data is lost on cold-starts.** Set a `DATABASE_URL` environment variable (Vercel Postgres, Supabase, Neon, etc.) for persistence.
+- **Scheduler** — `Flask-APScheduler` starts gracefully and silently fails on serverless environments where background threads aren't supported.
+
+**Deploy steps:**
+```bash
+npm install -g vercel   # install Vercel CLI (one-time)
+vercel                  # deploy from project root
+```
+
+**Required Vercel environment variables:**
+
+| Variable | Purpose |
+|----------|---------|
+| `SECRET_KEY` | Session signing key (any long random string) |
+| `DATABASE_URL` | (Optional) Hosted PostgreSQL URI for persistent data |
+
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+Contributions are welcome! Fork the repo, create a feature branch, and open a pull request.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.

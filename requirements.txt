@@ -1,7 +1,13 @@
 
+# Core framework
 flask
 flask-sqlalchemy
 flask-login
 flask-apscheduler
+
+# Auth / validation
+werkzeug
 email-validator
+
+# Production WSGI server
 gunicorn
