@@ -4,6 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse, urljoin
 from app.models import User
 from app.extensions import db
+import traceback
 
 auth = Blueprint('auth', __name__)
 
@@ -72,6 +73,9 @@ def register():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
+            # Log the REAL error so Vercel function logs show what's wrong
+            print(f"REGISTRATION ERROR: {e}")
+            traceback.print_exc()
             flash('Could not create account — database error. Please try again.', 'danger')
             return render_template('register.html')
 
