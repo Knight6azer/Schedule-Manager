@@ -9,5 +9,8 @@ flask-apscheduler
 werkzeug
 email-validator
 
+# Database driver — psycopg2-binary enables PostgreSQL (required for Vercel + Neon)
+psycopg2-binary
+
 # Production WSGI server
 gunicorn
