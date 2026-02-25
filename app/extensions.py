@@ -8,6 +8,7 @@ login_manager = LoginManager()
 scheduler = APScheduler()
 
 login_manager.login_view = 'auth.login'
+login_manager.login_message = ''          # suppress flash spam on redirect loops
 login_manager.login_message_category = 'info'
 
 # Use 'basic' instead of the default 'strong'.

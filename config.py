@@ -2,6 +2,7 @@
 import os
 from datetime import timedelta
 
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
@@ -25,7 +26,12 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_SAMESITE = 'Lax'
     REMEMBER_COOKIE_DURATION = timedelta(days=30)
-    SESSION_PERMANENT = False
+
+    # SESSION_PERMANENT pins cookies to an explicit expiry date.
+    # Without this, cookies are 'browser-session' cookies which browsers
+    # discard on Vercel's serverless redirects, causing the login loop.
+    SESSION_PERMANENT = True
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
 
     # -------------------------------------------------------------------
     # Database

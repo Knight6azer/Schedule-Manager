@@ -6,7 +6,12 @@ from app.extensions import db, login_manager
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    # Guard against DB errors on Vercel cold starts (e.g. tables not yet created).
+    # Returning None is safe — Flask-Login treats it as "no session" without crashing.
+    try:
+        return User.query.get(int(user_id))
+    except Exception:
+        return None
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)

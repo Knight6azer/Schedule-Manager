@@ -4,6 +4,7 @@ from config import Config
 from app.extensions import db, login_manager, scheduler
 from apscheduler.schedulers.base import SchedulerAlreadyRunningError
 import os
+import traceback
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -39,8 +40,9 @@ def create_app(config_class=Config):
         try:
             db.create_all()
         except Exception as e:
-            print(f"Database creation failed: {e}")
-            # If DB creation fails, the app might still run but error on requests.
-            # This is better than a 500 on startup.
+            # Print full traceback so Vercel logs reveal WHY DB creation failed.
+            # A silent pass here masks the root cause of load_user returning None.
+            print(f"CRITICAL: Database creation failed — load_user will return None for all sessions!")
+            traceback.print_exc()
 
     return app
