@@ -13,7 +13,7 @@ A professional, full-featured task management web application built with **Pytho
 
 ## 🚀 Key Features
 
-- **User Authentication** — Secure registration & login via `Flask-Login` and Werkzeug password hashing.
+- **User Authentication** — Secure registration & login with full input validation (empty-field checks, min-length rules, friendly duplicate-email/username messages).
 - **Per-User Task Isolation** — Every user sees only their own tasks.
 - **Professional Dark UI** — Glassmorphism design system with a fixed sidebar, Google Inter font, smooth transitions, and CSS custom properties.
 - **Real-Time Dashboard** — Stats bar (Total / Pending / In Progress / Completed) that refreshes after every AJAX action.
@@ -26,8 +26,9 @@ A professional, full-featured task management web application built with **Pytho
   - **Status**: Pending · In Progress · Completed
   - **Due Date** tracking
 - **RESTful JSON API** — Available at `/api/tasks` for external integrations.
-- **Vercel-Ready** — `vercel.json`, session-cookie hardening, and ephemeral `/tmp` DB fallback included.
+- **Vercel-Ready** — `vercel.json`, session-cookie hardening, `@before_request` DB init guard, and ephemeral `/tmp` DB fallback included.
 - **Responsive** — Sidebar collapses to a hamburger menu on mobile.
+- **SQLAlchemy 2.0 compatible** — Uses `db.session.get()` throughout; timezone-aware timestamps via `datetime.now(timezone.utc)`.
 
 ---
 
@@ -35,7 +36,7 @@ A professional, full-featured task management web application built with **Pytho
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Python 3, Flask, Flask-SQLAlchemy, Flask-Login |
+| Backend | Python 3, Flask, Flask-SQLAlchemy 3.x (SQLAlchemy 2.0), Flask-Login |
 | Database | SQLite (local) · PostgreSQL (production via `DATABASE_URL`) |
 | Frontend | HTML5, Vanilla CSS (custom design system), Vanilla JS (AJAX + live filter), Jinja2 |
 | Auth | Werkzeug password hashing, Flask-Login, email-validator |
@@ -157,6 +158,7 @@ The project ships with a `vercel.json` configuration. Key notes:
 
 - **Session Cookies** — `config.py` sets `SESSION_COOKIE_SECURE=True` and `SESSION_COOKIE_SAMESITE='Lax'` automatically when the `VERCEL` env var is detected, preventing login-loop issues over HTTPS.
 - **Session Protection** — Uses `'basic'` mode in Flask-Login to prevent session token regeneration that causes redirect loops on stateless serverless deployments.
+- **Database Init Guard** — `@app.before_request` calls `db.create_all()` before every request. This is critical for Vercel serverless: the GET (page load) and POST (form submit) can land on different container instances with independent `/tmp` filesystems, so tables must be created fresh on each container.
 - **Database** — On Vercel, SQLite is stored at `/tmp/schedule_v2.db` (ephemeral — data lost on cold starts). Set a `DATABASE_URL` env var (Neon, Supabase, etc.) for persistence.
 - **Connection Pooling** — `pool_pre_ping=True` and `pool_recycle=280` guard against Neon's 5-minute idle connection timeout.
 
