@@ -1,5 +1,5 @@
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from flask_login import login_required, current_user
 from app.models import Task
 from app.extensions import db
@@ -60,7 +60,9 @@ def create_task():
 @api.route('/tasks/<int:id>', methods=['PUT'])
 @login_required
 def update_task(id):
-    task = Task.query.get_or_404(id)
+    task = db.session.get(Task, id)
+    if task is None:
+        abort(404)
     if task.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 
@@ -82,7 +84,9 @@ def update_task(id):
 @login_required
 def toggle_task(id):
     """Toggle a task between Pending and Completed without a full page reload."""
-    task = Task.query.get_or_404(id)
+    task = db.session.get(Task, id)
+    if task is None:
+        abort(404)
     if task.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 
@@ -94,7 +98,9 @@ def toggle_task(id):
 @api.route('/tasks/<int:id>', methods=['DELETE'])
 @login_required
 def delete_task(id):
-    task = Task.query.get_or_404(id)
+    task = db.session.get(Task, id)
+    if task is None:
+        abort(404)
     if task.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 

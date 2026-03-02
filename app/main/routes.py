@@ -1,5 +1,5 @@
 
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
 from app.models import Task
 from app.extensions import db
@@ -48,7 +48,9 @@ def add_task():
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_task(id):
-    task = Task.query.get_or_404(id)
+    task = db.session.get(Task, id)
+    if task is None:
+        abort(404)
     if task.user_id != current_user.id:
         flash('Permission denied.', 'danger')
         return redirect(url_for('main.index'))
@@ -70,7 +72,9 @@ def edit_task(id):
 @main.route('/complete/<int:id>')
 @login_required
 def complete_task(id):
-    task = Task.query.get_or_404(id)
+    task = db.session.get(Task, id)
+    if task is None:
+        abort(404)
     if task.user_id != current_user.id:
         flash('Permission denied.', 'danger')
         return redirect(url_for('main.index'))
@@ -82,7 +86,9 @@ def complete_task(id):
 @main.route('/delete/<int:id>')
 @login_required
 def delete_task(id):
-    task = Task.query.get_or_404(id)
+    task = db.session.get(Task, id)
+    if task is None:
+        abort(404)
     if task.user_id != current_user.id:
         flash('Permission denied.', 'danger')
         return redirect(url_for('main.index'))
