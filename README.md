@@ -1,5 +1,5 @@
 
-# Schedule Manager V2 — Neon Edition
+# Schedule Manager V2
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.x-blue.svg)
@@ -7,7 +7,7 @@
 ![Deployed on Vercel](https://img.shields.io/badge/deployed%20on-Vercel-black?logo=vercel)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 
-A professional, full-featured task management web application built with **Python & Flask**. Features a stunning **Blue-Violet Neon** dark theme with glassmorphism effects, per-user task isolation via authentication, and a RESTful API.
+A professional, full-featured task management web application built with **Python & Flask**. Features a dark glassmorphism UI, sidebar navigation, AJAX-driven interactions, live filtering, and a real-time stats dashboard — all with per-user task isolation and secure authentication.
 
 ---
 
@@ -15,18 +15,19 @@ A professional, full-featured task management web application built with **Pytho
 
 - **User Authentication** — Secure registration & login via `Flask-Login` and Werkzeug password hashing.
 - **Per-User Task Isolation** — Every user sees only their own tasks.
-- **Neon Dark Theme** — Futuristic Blue-Violet UI with neon glows, glassmorphism, and smooth transitions. Font: *Outfit* (Google Fonts).
-- **Modular Blueprint Architecture** — Clean separation via `auth`, `main`, and `api` Blueprints.
+- **Professional Dark UI** — Glassmorphism design system with a fixed sidebar, Google Inter font, smooth transitions, and CSS custom properties.
+- **Real-Time Dashboard** — Stats bar (Total / Pending / In Progress / Completed) that refreshes after every AJAX action.
+- **AJAX Interactions** — Toggle task status and delete tasks without any page reload; animated card removal.
+- **Live Filtering** — Filter tasks by status tab, free-text search, category, and priority — all client-side, instant.
+- **Toast Notifications** — Animated top-right toast system for all feedback (success, danger, info).
 - **Full Task CRUD**:
-  - Create, Read, Update, Delete tasks.
-  - **Priority**: High · Medium · Low (color-coded).
-  - **Category**: Work · Personal · Study · Health.
-  - **Status**: Pending · In Progress · Completed.
-  - **Due Date** tracking.
-  - **Reminder Time** field.
+  - **Priority**: High · Medium · Low (colour-coded card border)
+  - **Category**: General · Work · Personal · Study · Health
+  - **Status**: Pending · In Progress · Completed
+  - **Due Date** tracking
 - **RESTful JSON API** — Available at `/api/tasks` for external integrations.
-- **APScheduler Integration** — Background scheduler infrastructure (gracefully disabled on serverless).
-- **Vercel-Ready** — Includes `vercel.json`, session-cookie hardening, and ephemeral `/tmp` DB fallback.
+- **Vercel-Ready** — `vercel.json`, session-cookie hardening, and ephemeral `/tmp` DB fallback included.
+- **Responsive** — Sidebar collapses to a hamburger menu on mobile.
 
 ---
 
@@ -34,10 +35,10 @@ A professional, full-featured task management web application built with **Pytho
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Python 3, Flask, Flask-SQLAlchemy, Flask-Login, Flask-APScheduler |
+| Backend | Python 3, Flask, Flask-SQLAlchemy, Flask-Login |
 | Database | SQLite (local) · PostgreSQL (production via `DATABASE_URL`) |
-| Frontend | HTML5, CSS3 (Custom Neon Theme), Jinja2 |
-| Auth | Werkzeug password hashing, `flask-login`, `email-validator` |
+| Frontend | HTML5, Vanilla CSS (custom design system), Vanilla JS (AJAX + live filter), Jinja2 |
+| Auth | Werkzeug password hashing, Flask-Login, email-validator |
 | Deployment | Vercel (serverless), Gunicorn (traditional) |
 
 ---
@@ -48,17 +49,24 @@ A professional, full-featured task management web application built with **Pytho
 Schedule Manager (Py)/
 ├── app/
 │   ├── __init__.py          # Application factory (create_app)
-│   ├── extensions.py        # Shared Flask extensions (db, login_manager, scheduler)
+│   ├── extensions.py        # Shared extensions: db, login_manager
 │   ├── models.py            # SQLAlchemy models: User, Task
 │   ├── auth/
-│   │   └── routes.py        # /auth/login, /auth/register, /auth/logout
+│   │   └── routes.py        # /auth/login  /auth/register  /auth/logout
 │   ├── main/
-│   │   └── routes.py        # / (dashboard), /add, /edit/<id>, /delete/<id>, ...
+│   │   └── routes.py        # / (dashboard)  /add  /edit/<id>  /complete/<id>  /delete/<id>
 │   ├── api/
-│   │   └── routes.py        # /api/tasks (CRUD JSON API)
-│   ├── templates/           # Jinja2 HTML templates
-│   └── static/              # CSS (Neon theme), JS
-├── config.py                # Config class (SECRET_KEY, DB URI, session cookies)
+│   │   └── routes.py        # JSON API: CRUD + toggle + stats + filtered list
+│   ├── templates/
+│   │   ├── base.html        # Sidebar app shell (auth pages use auth_content block)
+│   │   ├── index.html       # Dashboard: stats bar + filter bar + task grid
+│   │   ├── login.html       # Split-panel login page
+│   │   ├── register.html    # Split-panel register page
+│   │   └── task_form.html   # Create / Edit task form
+│   └── static/
+│       ├── css/style.css    # Full design system (CSS custom properties, glassmorphism)
+│       └── js/script.js     # AJAX toggle/delete, live filter, toasts, sidebar toggle
+├── config.py                # Config: SECRET_KEY, DB URI, session cookie hardening
 ├── run.py                   # Entry point — calls create_app()
 ├── vercel.json              # Vercel serverless deployment config
 ├── Procfile                 # For Gunicorn / traditional hosting
@@ -73,7 +81,7 @@ Schedule Manager (Py)/
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/Knight6azer/Schedule-Manager.git
-   cd Schedule-Manager
+   cd "Schedule Manager (Py)"
    ```
 
 2. **Create & activate a virtual environment:**
@@ -103,16 +111,18 @@ Schedule Manager (Py)/
 
 ## 🔌 API Reference
 
-All API endpoints require an authenticated session. Responses are JSON.
+All endpoints require an authenticated session. Responses are JSON.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/tasks` | List all tasks for the logged-in user |
+| `GET` | `/api/tasks` | List tasks (supports `?q=`, `?status=`, `?priority=`, `?category=` filters) |
 | `POST` | `/api/tasks` | Create a new task |
-| `PUT` | `/api/tasks/<id>` | Update an existing task |
+| `PUT` | `/api/tasks/<id>` | Update an existing task (all fields) |
+| `PATCH` | `/api/tasks/<id>/toggle` | Toggle status: Pending ↔ Completed |
 | `DELETE` | `/api/tasks/<id>` | Delete a task |
+| `GET` | `/api/stats` | Task counts grouped by status (`total`, `pending`, `in_progress`, `completed`) |
 
-**Task JSON Schema:**
+**Task JSON schema:**
 ```json
 {
   "id": 1,
@@ -121,11 +131,21 @@ All API endpoints require an authenticated session. Responses are JSON.
   "priority": "High",
   "category": "Work",
   "status": "In Progress",
-  "due_date": "2025-12-31",
+  "due_date": "2026-03-10",
   "reminder_time": null,
-  "created_at": "2025-02-15T10:00:00",
-  "updated_at": "2025-02-15T10:00:00",
+  "created_at": "2026-03-02T14:00:00",
+  "updated_at": "2026-03-02T14:00:00",
   "user_id": 1
+}
+```
+
+**Stats JSON schema:**
+```json
+{
+  "total": 12,
+  "pending": 5,
+  "in_progress": 3,
+  "completed": 4
 }
 ```
 
@@ -133,11 +153,12 @@ All API endpoints require an authenticated session. Responses are JSON.
 
 ## 🚀 Deployment — Vercel
 
-The project ships with a `vercel.json` configuration. Important notes:
+The project ships with a `vercel.json` configuration. Key notes:
 
-- **Session Cookies** — `config.py` automatically sets `SESSION_COOKIE_SECURE=True` and `SESSION_COOKIE_SAMESITE='Lax'` when the `VERCEL` environment variable is detected, preventing the login-loop issue on HTTPS.
-- **Database** — On Vercel, SQLite is stored at `/tmp/schedule_v2.db` (ephemeral). **Data is lost on cold-starts.** Set a `DATABASE_URL` environment variable (Vercel Postgres, Supabase, Neon, etc.) for persistence.
-- **Scheduler** — `Flask-APScheduler` starts gracefully and silently fails on serverless environments where background threads aren't supported.
+- **Session Cookies** — `config.py` sets `SESSION_COOKIE_SECURE=True` and `SESSION_COOKIE_SAMESITE='Lax'` automatically when the `VERCEL` env var is detected, preventing login-loop issues over HTTPS.
+- **Session Protection** — Uses `'basic'` mode in Flask-Login to prevent session token regeneration that causes redirect loops on stateless serverless deployments.
+- **Database** — On Vercel, SQLite is stored at `/tmp/schedule_v2.db` (ephemeral — data lost on cold starts). Set a `DATABASE_URL` env var (Neon, Supabase, etc.) for persistence.
+- **Connection Pooling** — `pool_pre_ping=True` and `pool_recycle=280` guard against Neon's 5-minute idle connection timeout.
 
 **Deploy steps:**
 ```bash
@@ -150,7 +171,7 @@ vercel                  # deploy from project root
 | Variable | Purpose |
 |----------|---------|
 | `SECRET_KEY` | Session signing key (any long random string) |
-| `DATABASE_URL` | (Optional) Hosted PostgreSQL URI for persistent data |
+| `DATABASE_URL` | Hosted PostgreSQL URI for persistent data (recommended) |
 
 ---
 

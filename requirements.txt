@@ -3,7 +3,6 @@
 flask
 flask-sqlalchemy
 flask-login
-flask-apscheduler
 
 # Auth / validation
 werkzeug

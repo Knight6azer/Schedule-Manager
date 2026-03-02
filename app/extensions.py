@@ -1,18 +1,14 @@
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_apscheduler import APScheduler
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-scheduler = APScheduler()
 
 login_manager.login_view = 'auth.login'
-login_manager.login_message = ''          # suppress flash spam on redirect loops
+login_manager.login_message = ''
 login_manager.login_message_category = 'info'
 
-# Use 'basic' instead of the default 'strong'.
-# 'strong' regenerates session tokens on every request, which on Vercel's
-# serverless/stateless architecture causes sessions to be invalidated
-# mid-flight, producing the login redirect loop.
+# 'basic' prevents session token regeneration on every request.
+# 'strong' causes login loops on stateless/serverless platforms like Vercel.
 login_manager.session_protection = 'basic'

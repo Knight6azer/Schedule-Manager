@@ -1,80 +1,99 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ 'Edit Task' if task else 'New Task' }} — Schedule Manager{% endblock %}
+{% block page_title %}{{ 'Edit Task' if task else 'New Task' }}{% endblock %}
+
 {% block content %}
-<div class="auth-container" style="min-height: auto; margin-top: 2rem;">
-    <div class="card" style="width: 100%; max-width: 700px;">
-        <div class="task-header" style="margin-bottom: 2rem;">
-            <h1
-                style="background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                {{ 'Edit Task' if task else 'New Task' }}
-            </h1>
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-title">{{ 'Edit Task' if task else 'Create New Task' }}</div>
+        <div class="form-subtitle">
+            {{ 'Update the details for your task.' if task else 'Fill in the details below to add a new task to your
+            schedule.' }}
         </div>
 
         <form method="POST">
             <div class="form-group">
-                <label for="title">Task Title</label>
-                <input type="text" id="title" name="title" value="{{ task.title if task else '' }}" required
-                    placeholder="e.g. Finish Project Report" autofocus>
+                <label class="form-label" for="title">Task Title *</label>
+                <input class="form-control" type="text" id="title" name="title" value="{{ task.title if task else '' }}"
+                    required placeholder="e.g. Finish quarterly report" autofocus>
             </div>
 
             <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" rows="5"
-                    placeholder="Add details...">{{ task.description if task else '' }}</textarea>
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="4"
+                    placeholder="Add any extra details, notes, or context…">{{ task.description if task else '' }}</textarea>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                <div>
-                    <label for="priority">Priority</label>
-                    <select id="priority" name="priority">
-                        <option value="High" {% if task and task.priority=='High' %}selected{% endif %}>High 🔥</option>
-                        <option value="Medium" {% if task and task.priority=='Medium' %}selected{% endif %}{% if not
-                            task %}selected{% endif %}>Medium ⚡</option>
-                        <option value="Low" {% if task and task.priority=='Low' %}selected{% endif %}>Low ☕</option>
+            <div class="form-grid-2">
+                <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label" for="priority">Priority</label>
+                    <select class="form-control" id="priority" name="priority">
+                        <option value="High" {% if task and task.priority=='High' %}selected{% endif %}>🔥 High</option>
+                        <option value="Medium" {% if (task and task.priority=='Medium' ) or not task %}selected{% endif
+                            %}>⚡ Medium</option>
+                        <option value="Low" {% if task and task.priority=='Low' %}selected{% endif %}>☕ Low</option>
                     </select>
                 </div>
-                <div>
-                    <label for="due_date">Due Date</label>
-                    <input type="date" id="due_date" name="due_date"
+
+                <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label" for="due_date">Due Date</label>
+                    <input class="form-control" type="date" id="due_date" name="due_date"
                         value="{{ task.due_date.strftime('%Y-%m-%d') if task and task.due_date else '' }}">
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
-                <div>
-                    <label for="category">Category</label>
-                    <select id="category" name="category">
-                        <option value="General" {% if task and task.category=='General' %}selected{% endif %}>General 📝
+            <div class="form-grid-2" style="margin-top:1.25rem">
+                <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label" for="category">Category</label>
+                    <select class="form-control" id="category" name="category">
+                        <option value="General" {% if not task or task.category=='General' %}selected{% endif %}>📝
+                            General</option>
+                        <option value="Work" {% if task and task.category=='Work' %}selected{% endif %}>💼 Work</option>
+                        <option value="Personal" {% if task and task.category=='Personal' %}selected{% endif %}>🏠
+                            Personal</option>
+                        <option value="Study" {% if task and task.category=='Study' %}selected{% endif %}>📚 Study
                         </option>
-                        <option value="Work" {% if task and task.category=='Work' %}selected{% endif %}>Work 💼</option>
-                        <option value="Personal" {% if task and task.category=='Personal' %}selected{% endif %}>Personal
-                            🏠</option>
-                        <option value="Study" {% if task and task.category=='Study' %}selected{% endif %}>Study 📚
-                        </option>
-                        <option value="Health" {% if task and task.category=='Health' %}selected{% endif %}>Health 💪
+                        <option value="Health" {% if task and task.category=='Health' %}selected{% endif %}>💪 Health
                         </option>
                     </select>
                 </div>
+
                 {% if task %}
-                <div>
-                    <label for="status">Status</label>
-                    <select id="status" name="status">
-                        <option value="Pending" {% if task.status=='Pending' %}selected{% endif %}>Pending ⏳</option>
-                        <option value="In Progress" {% if task.status=='In Progress' %}selected{% endif %}>In Progress
-                            🚧</option>
-                        <option value="Completed" {% if task.status=='Completed' %}selected{% endif %}>Completed ✅
+                <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label" for="status">Status</label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="Pending" {% if task.status=='Pending' %}selected{% endif %}>⏳ Pending</option>
+                        <option value="In Progress" {% if task.status=='In Progress' %}selected{% endif %}>🚧 In
+                            Progress</option>
+                        <option value="Completed" {% if task.status=='Completed' %}selected{% endif %}>✅ Completed
                         </option>
                     </select>
                 </div>
                 {% endif %}
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary" style="flex: 1; padding: 1rem;">
-                    {{ 'Save Changes' if task else 'Create Task' }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="flex:1; padding:0.8rem;">
+                    {% if task %}
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                    </svg>
+                    Save Changes
+                    {% else %}
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Create Task
+                    {% endif %}
                 </button>
-                <a href="{{ url_for('main.index') }}" class="btn"
-                    style="background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border);">Cancel</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-ghost"
+                    style="flex:0 0 auto; padding:0.8rem 1.5rem;">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>

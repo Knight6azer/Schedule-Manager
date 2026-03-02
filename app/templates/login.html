@@ -1,26 +1,70 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<div class="auth-container">
-    <div class="card auth-card">
-        <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">Welcome Back</h2>
-        <form method="POST">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required placeholder="Enter your email">
+{% block auth_content %}
+<div class="auth-page">
+    <!-- Left brand panel -->
+    <div class="auth-brand">
+        <div class="auth-brand-content">
+            <div class="auth-brand-icon">
+                <svg width="36" height="36" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <line x1="8" y1="14" x2="16" y2="14" />
+                    <line x1="8" y1="18" x2="12" y2="18" />
+                </svg>
             </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            <div class="auth-brand-title">Schedule.AI</div>
+            <div class="auth-brand-sub">
+                Your intelligent schedule manager. Organise tasks, track priorities, and own your time.
             </div>
+            <div class="auth-features">
+                <div class="auth-feature">
+                    <div class="auth-feature-dot dot-purple"></div>
+                    <span>Priority-based task management</span>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-dot dot-cyan"></div>
+                    <span>Real-time status tracking</span>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-dot dot-green"></div>
+                    <span>Smart filters &amp; search</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Sign In</button>
-            <p style="margin-top: 1.5rem; text-align: center; color: var(--text-muted);">
-                Don't have an account? <a href="{{ url_for('auth.register') }}"
-                    style="color: var(--secondary); text-decoration: none;">Register</a>
+    <!-- Right form panel  -->
+    <div class="auth-form-panel">
+        <div class="auth-form-box">
+            <div class="auth-form-title">Welcome back</div>
+            <div class="auth-form-sub">Sign in to your account to continue.</div>
+
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input class="form-control" type="email" id="email" name="email" required
+                        placeholder="you@example.com" autofocus>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" id="password" name="password" required
+                        placeholder="Enter your password">
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width:100%; padding:0.8rem; margin-top:0.5rem; font-size:0.95rem;">
+                    Sign In
+                </button>
+            </form>
+
+            <p style="margin-top:1.5rem; text-align:center; color:var(--text-muted); font-size:0.9rem;">
+                Don't have an account?
+                <a href="{{ url_for('auth.register') }}" class="auth-link">Create one free</a>
             </p>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}
