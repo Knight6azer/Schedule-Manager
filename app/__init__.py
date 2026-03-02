@@ -20,11 +20,20 @@ def create_app(config_class=Config):
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(api, url_prefix='/api')
 
-    with app.app_context():
+    # ------------------------------------------------------------------ #
+    # Ensure DB tables exist on EVERY request.                            #
+    # This is critical for Vercel serverless: the GET (register page) and #
+    # the POST (form submit) can land on DIFFERENT container instances,   #
+    # each with a fresh /tmp — so we cannot rely on tables created during #
+    # app factory startup alone.                                          #
+    # ------------------------------------------------------------------ #
+    @app.before_request
+    def ensure_db():
         try:
             db.create_all()
         except Exception:
-            print("CRITICAL: Database creation failed — load_user will return None for all sessions!")
+            # Log so Vercel function logs show the root cause if something
+            # is genuinely wrong with the DB connection.
             traceback.print_exc()
 
     return app
