@@ -69,7 +69,7 @@ def edit_task(id):
     return render_template('task_form.html', task=task)
 
 
-@main.route('/complete/<int:id>')
+@main.route('/complete/<int:id>', methods=['POST'])
 @login_required
 def complete_task(id):
     task = db.session.get(Task, id)
@@ -83,7 +83,7 @@ def complete_task(id):
     return redirect(url_for('main.index'))
 
 
-@main.route('/delete/<int:id>')
+@main.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_task(id):
     task = db.session.get(Task, id)

@@ -41,8 +41,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI      = _get_db_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # pool_pre_ping prevents dead-connection errors with Neon's 5-min idle timeout
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 280,
-    }
+    # pool_pre_ping prevents dead-connection errors with Neon's 5-min idle timeout.
+    # Only relevant for PostgreSQL — SQLite uses NullPool so these would be ignored.
+    SQLALCHEMY_ENGINE_OPTIONS = (
+        {'pool_pre_ping': True, 'pool_recycle': 280}
+        if os.environ.get('DATABASE_URL')
+        else {}
+    )

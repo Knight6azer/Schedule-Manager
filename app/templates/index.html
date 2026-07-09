@@ -104,7 +104,6 @@
 <div class="tasks-grid" id="tasks-grid">
     {% if tasks %}
     {% for task in tasks %}
-    {% set today = namespace(val=none) %}
     <div class="task-card priority-{{ task.priority | lower }}
                 {% if task.status == 'Completed' %}status-completed{% endif %}" data-title="{{ task.title | lower }}"
         data-status="{{ task.status }}" data-category="{{ task.category }}" data-priority="{{ task.priority }}"

@@ -29,8 +29,11 @@ def create_app(config_class=Config):
     # ------------------------------------------------------------------ #
     @app.before_request
     def ensure_db():
+        if getattr(app, '_db_initialized', False):
+            return
         try:
             db.create_all()
+            app._db_initialized = True
         except Exception:
             # Log so Vercel function logs show the root cause if something
             # is genuinely wrong with the DB connection.

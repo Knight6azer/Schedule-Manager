@@ -26,7 +26,7 @@ A professional, full-featured task management web application built with **Pytho
   - **Status**: Pending · In Progress · Completed
   - **Due Date** tracking
 - **RESTful JSON API** — Available at `/api/tasks` for external integrations.
-- **Vercel-Ready** — `vercel.json`, session-cookie hardening, `@before_request` DB init guard, and ephemeral `/tmp` DB fallback included.
+- **Vercel-Ready** — `vercel.json` with static asset serving, session-cookie hardening, optimised DB init guard, and ephemeral `/tmp` DB fallback included.
 - **Responsive** — Sidebar collapses to a hamburger menu on mobile.
 - **SQLAlchemy 2.0 compatible** — Uses `db.session.get()` throughout; timezone-aware timestamps via `datetime.now(timezone.utc)`.
 
@@ -39,7 +39,7 @@ A professional, full-featured task management web application built with **Pytho
 | Backend | Python 3, Flask, Flask-SQLAlchemy 3.x (SQLAlchemy 2.0), Flask-Login |
 | Database | SQLite (local) · PostgreSQL (production via `DATABASE_URL`) |
 | Frontend | HTML5, Vanilla CSS (custom design system), Vanilla JS (AJAX + live filter), Jinja2 |
-| Auth | Werkzeug password hashing, Flask-Login, email-validator |
+| Auth | Werkzeug password hashing, Flask-Login |
 | Deployment | Vercel (serverless), Gunicorn (traditional) |
 
 ---
@@ -53,10 +53,13 @@ Schedule Manager (Py)/
 │   ├── extensions.py        # Shared extensions: db, login_manager
 │   ├── models.py            # SQLAlchemy models: User, Task
 │   ├── auth/
+│   │   ├── __init__.py
 │   │   └── routes.py        # /auth/login  /auth/register  /auth/logout
 │   ├── main/
+│   │   ├── __init__.py
 │   │   └── routes.py        # / (dashboard)  /add  /edit/<id>  /complete/<id>  /delete/<id>
 │   ├── api/
+│   │   ├── __init__.py
 │   │   └── routes.py        # JSON API: CRUD + toggle + stats + filtered list
 │   ├── templates/
 │   │   ├── base.html        # Sidebar app shell (auth pages use auth_content block)
@@ -69,11 +72,14 @@ Schedule Manager (Py)/
 │       └── js/script.js     # AJAX toggle/delete, live filter, toasts, sidebar toggle
 ├── config.py                # Config: SECRET_KEY, DB URI, session cookie hardening
 ├── run.py                   # Entry point — calls create_app()
-├── vercel.json              # Vercel serverless deployment config
+├── vercel.json              # Vercel serverless deployment config (with static asset serving)
 ├── Procfile                 # For Gunicorn / traditional hosting
 ├── requirements.txt         # Python dependencies
-└── schedule_v2.db           # Local SQLite DB (auto-created, git-ignored)
+├── .gitignore               # Ignores DBs, pycache, node_modules, env files
+└── LICENSE                  # MIT License
 ```
+
+> **Note:** `schedule_v2.db` (SQLite database) is auto-created at runtime and git-ignored.
 
 ---
 
@@ -156,11 +162,12 @@ All endpoints require an authenticated session. Responses are JSON.
 
 The project ships with a `vercel.json` configuration. Key notes:
 
+- **Static Assets** — CSS and JS files are served directly by Vercel's CDN via a dedicated static route, avoiding Python cold-start latency for asset requests.
 - **Session Cookies** — `config.py` sets `SESSION_COOKIE_SECURE=True` and `SESSION_COOKIE_SAMESITE='Lax'` automatically when the `VERCEL` env var is detected, preventing login-loop issues over HTTPS.
 - **Session Protection** — Uses `'basic'` mode in Flask-Login to prevent session token regeneration that causes redirect loops on stateless serverless deployments.
-- **Database Init Guard** — `@app.before_request` calls `db.create_all()` before every request. This is critical for Vercel serverless: the GET (page load) and POST (form submit) can land on different container instances with independent `/tmp` filesystems, so tables must be created fresh on each container.
+- **Database Init Guard** — `@app.before_request` calls `db.create_all()` once per container process (not on every request) using a per-process flag. This handles Vercel's ephemeral container model while avoiding per-request overhead.
 - **Database** — On Vercel, SQLite is stored at `/tmp/schedule_v2.db` (ephemeral — data lost on cold starts). Set a `DATABASE_URL` env var (Neon, Supabase, etc.) for persistence.
-- **Connection Pooling** — `pool_pre_ping=True` and `pool_recycle=280` guard against Neon's 5-minute idle connection timeout.
+- **Connection Pooling** — `pool_pre_ping=True` and `pool_recycle=280` are automatically enabled when `DATABASE_URL` is set, guarding against Neon's 5-minute idle connection timeout. These options are skipped for SQLite (which uses `NullPool`).
 
 **Deploy steps:**
 ```bash
@@ -174,6 +181,29 @@ vercel                  # deploy from project root
 |----------|---------|
 | `SECRET_KEY` | Session signing key (any long random string) |
 | `DATABASE_URL` | Hosted PostgreSQL URI for persistent data (recommended) |
+
+---
+
+## 📋 Changelog
+
+### v2.1 — Bug Fix & Cleanup Release
+
+**Critical fixes:**
+- Added missing `__init__.py` to all three blueprint packages (`auth/`, `main/`, `api/`) — prevents import failures on Gunicorn / Vercel
+- Optimised `@before_request` DB init guard to run once per process instead of on every HTTP request
+- Made `SQLALCHEMY_ENGINE_OPTIONS` conditional — pool settings only apply when using PostgreSQL (`DATABASE_URL` set), avoiding SQLite warnings
+
+**Security & correctness:**
+- Changed `/delete/<id>` and `/complete/<id>` routes from `GET` to `POST` — prevents accidental mutations from crawlers, prefetch, or browser navigation
+- Set a meaningful `login_message` so users see feedback when redirected to login
+
+**Cleanup:**
+- Removed legacy files (`app.py`, root-level `models.py`, `schedule_manager.py`) that conflicted with the current `app/` package structure
+- Fixed CSS `--bg-surface` variable which had a fully transparent alpha (`#13172200` → `#131722`)
+- Removed dead Jinja `namespace` variable from dashboard template
+- Added static asset route to `vercel.json` for faster CSS/JS delivery via Vercel CDN
+- Expanded `.gitignore` to cover agent tooling directories and additional IDE/system patterns
+- Cleaned up git tracking of files that should have been ignored
 
 ---
 

@@ -10,6 +10,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+*.egg-info/
+dist/
+build/
 
 # Database
 instance/
@@ -21,6 +24,10 @@ schedule_data.json
 .vscode/
 .idea/
 *.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
 # Testing
 .coverage
@@ -38,3 +45,8 @@ package-lock.json
 # System
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Agent / AI tooling
+.agents/
+.gemini/
