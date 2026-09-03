@@ -26,6 +26,11 @@ def _get_db_uri():
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
 
+    # Runtime defaults that keep the application predictable in local and hosted environments
+    SESSION_COOKIE_NAME = os.environ.get('SESSION_COOKIE_NAME') or 'schedule_manager_session'
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    PREFERRED_URL_SCHEME = 'https' if os.environ.get('VERCEL') else 'http'
+
     # Harden session cookies for HTTPS (Vercel) without breaking local dev
     SESSION_COOKIE_SECURE   = bool(os.environ.get('VERCEL'))
     SESSION_COOKIE_HTTPONLY = True
