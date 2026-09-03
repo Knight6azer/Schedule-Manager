@@ -1,9 +1,10 @@
 
 from flask import Blueprint, jsonify, request, abort
 from flask_login import login_required, current_user
-from app.models import Task
+from app.models import Task, Notification
 from app.extensions import db
-from datetime import datetime
+from app.services.task_service import TaskService
+from app.services.productivity_service import ProductivityService
 
 api = Blueprint('api', __name__)
 
@@ -33,24 +34,24 @@ def get_tasks():
 @api.route('/tasks', methods=['POST'])
 @login_required
 def create_task():
-    data = request.get_json()
-    if not data or 'title' not in data:
-        return jsonify({'error': 'Title is required'}), 400
-
-    due_date = None
-    if data.get('due_date'):
-        try:
-            due_date = datetime.fromisoformat(data['due_date']).date()
-        except ValueError:
-            pass
+    data = request.get_json(silent=True) or {}
+    try:
+        sanitized = TaskService.validate_task_payload(data)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
 
     task = Task(
-        title       = data['title'],
-        description = data.get('description'),
-        priority    = data.get('priority', 'Medium'),
-        category    = data.get('category', 'General'),
-        due_date    = due_date,
-        user_id     = current_user.id
+        title=sanitized['title'],
+        description=sanitized['description'] or None,
+        priority=sanitized['priority'],
+        category=sanitized['category'],
+        status=sanitized['status'],
+        due_date=sanitized['due_date'],
+        is_recurring=sanitized['is_recurring'],
+        recurrence_interval=sanitized['recurrence_interval'],
+        recurrence_unit=sanitized['recurrence_unit'],
+        reminder_days_ahead=sanitized['reminder_days_ahead'],
+        user_id=current_user.id,
     )
     db.session.add(task)
     db.session.commit()
@@ -66,15 +67,29 @@ def update_task(id):
     if task.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 
-    data = request.get_json()
-    for field in ('title', 'description', 'priority', 'category', 'status'):
-        if field in data:
-            setattr(task, field, data[field])
-    if 'due_date' in data:
-        try:
-            task.due_date = datetime.fromisoformat(data['due_date']).date()
-        except (ValueError, TypeError):
-            task.due_date = None
+    data = request.get_json(silent=True) or {}
+    try:
+        sanitized = TaskService.validate_task_payload({
+            'title': data.get('title', task.title),
+            'description': data.get('description', task.description),
+            'priority': data.get('priority', task.priority),
+            'category': data.get('category', task.category),
+            'status': data.get('status', task.status),
+            'due_date': data.get('due_date', task.due_date),
+        })
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+
+    task.title = sanitized['title']
+    task.description = sanitized['description'] or None
+    task.priority = sanitized['priority']
+    task.category = sanitized['category']
+    task.status = sanitized['status']
+    task.due_date = sanitized['due_date']
+    task.is_recurring = sanitized['is_recurring']
+    task.recurrence_interval = sanitized['recurrence_interval']
+    task.recurrence_unit = sanitized['recurrence_unit']
+    task.reminder_days_ahead = sanitized['reminder_days_ahead']
 
     db.session.commit()
     return jsonify(task.to_dict())
@@ -91,6 +106,8 @@ def toggle_task(id):
         return jsonify({'error': 'Unauthorized'}), 403
 
     task.status = 'Completed' if task.status != 'Completed' else 'Pending'
+    if task.is_recurring and task.status == 'Completed':
+        ProductivityService.create_recurring_task(task)
     db.session.commit()
     return jsonify(task.to_dict())
 
@@ -114,10 +131,25 @@ def delete_task(id):
 def get_stats():
     """Return task counts grouped by status for the dashboard stats bar."""
     tasks = Task.query.filter_by(user_id=current_user.id).all()
-    stats = {
-        'total'      : len(tasks),
-        'pending'    : sum(1 for t in tasks if t.status == 'Pending'),
-        'in_progress': sum(1 for t in tasks if t.status == 'In Progress'),
-        'completed'  : sum(1 for t in tasks if t.status == 'Completed'),
-    }
-    return jsonify(stats)
+    return jsonify({
+        **TaskService.build_task_statistics(tasks),
+        'analytics': ProductivityService.build_dashboard_analytics(tasks),
+    })
+
+
+@api.route('/notifications', methods=['GET'])
+@login_required
+def get_notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).order_by(Notification.created_at.desc()).all()
+    return jsonify([n.to_dict() for n in notifications])
+
+
+@api.route('/notifications/<int:id>/read', methods=['POST'])
+@login_required
+def mark_notification_read(id):
+    notification = db.session.get(Notification, id)
+    if notification is None or notification.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    notification.is_read = True
+    db.session.commit()
+    return jsonify({'message': 'Notification marked as read'})
