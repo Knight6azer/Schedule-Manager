@@ -1,5 +1,5 @@
 
-from flask import Flask, g
+from flask import Flask, g, request
 from config import Config
 from app.extensions import db, login_manager
 
@@ -18,6 +18,19 @@ def create_app(config_class=Config):
     app.register_blueprint(main)
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(api, url_prefix='/api')
+
+    @app.after_request
+    def add_security_and_cache_headers(response):
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+
+        if request.path.startswith('/static/'):
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        else:
+            response.headers['Cache-Control'] = 'no-store'
+
+        return response
 
     # ------------------------------------------------------------------ #
     # Ensure DB tables exist once per container instance.                 #
