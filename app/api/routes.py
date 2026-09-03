@@ -76,6 +76,10 @@ def update_task(id):
             'category': data.get('category', task.category),
             'status': data.get('status', task.status),
             'due_date': data.get('due_date', task.due_date),
+            'is_recurring': data.get('is_recurring', task.is_recurring),
+            'recurrence_interval': data.get('recurrence_interval', task.recurrence_interval),
+            'recurrence_unit': data.get('recurrence_unit', task.recurrence_unit),
+            'reminder_days_ahead': data.get('reminder_days_ahead', task.reminder_days_ahead),
         })
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
