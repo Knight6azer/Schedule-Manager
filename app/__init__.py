@@ -1,8 +1,7 @@
 
-from flask import Flask
+from flask import Flask, g
 from config import Config
 from app.extensions import db, login_manager
-import traceback
 
 
 def create_app(config_class=Config):
@@ -21,22 +20,24 @@ def create_app(config_class=Config):
     app.register_blueprint(api, url_prefix='/api')
 
     # ------------------------------------------------------------------ #
-    # Ensure DB tables exist on EVERY request.                            #
-    # This is critical for Vercel serverless: the GET (register page) and #
-    # the POST (form submit) can land on DIFFERENT container instances,   #
-    # each with a fresh /tmp — so we cannot rely on tables created during #
-    # app factory startup alone.                                          #
+    # Ensure DB tables exist once per container instance.                 #
+    # Critical for Vercel serverless where each instance has fresh /tmp.  #
+    # Optimized with flask.g to avoid per-request overhead.              #
     # ------------------------------------------------------------------ #
     @app.before_request
     def ensure_db():
+        # Skip if already checked in this request context
+        if getattr(g, '_db_created', False):
+            return
+        # Skip if already initialized for this app instance
         if getattr(app, '_db_initialized', False):
+            g._db_created = True
             return
         try:
             db.create_all()
             app._db_initialized = True
-        except Exception:
-            # Log so Vercel function logs show the root cause if something
-            # is genuinely wrong with the DB connection.
-            traceback.print_exc()
+            g._db_created = True
+        except Exception as e:
+            app.logger.error(f'Database initialization failed: {e}')
 
     return app
