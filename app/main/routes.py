@@ -1,11 +1,18 @@
 
 from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
-from app.models import Task
+from app.models import Task, Notification
 from app.extensions import db
-from datetime import datetime
+from app.services.task_service import TaskService
+from app.services.productivity_service import ProductivityService
 
 main = Blueprint('main', __name__)
+
+
+@main.route('/healthz')
+def healthz():
+    """Lightweight endpoint for hosting checks and deployment monitors."""
+    return {'status': 'ok'}, 200
 
 
 @main.route('/')
@@ -13,30 +20,47 @@ def index():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
     tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.due_date.asc()).all()
-    stats = {
-        'total'      : len(tasks),
-        'pending'    : sum(1 for t in tasks if t.status == 'Pending'),
-        'in_progress': sum(1 for t in tasks if t.status == 'In Progress'),
-        'completed'  : sum(1 for t in tasks if t.status == 'Completed'),
-    }
-    return render_template('index.html', tasks=tasks, stats=stats)
+    stats = TaskService.build_task_statistics(tasks)
+    analytics = ProductivityService.build_dashboard_analytics(tasks)
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).order_by(Notification.created_at.desc()).all()
+    return render_template('index.html', tasks=tasks, stats=stats, analytics=analytics, notifications=notifications)
 
 
 @main.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_task():
     if request.method == 'POST':
-        title       = request.form.get('title')
-        description = request.form.get('description')
-        priority    = request.form.get('priority')
-        category    = request.form.get('category')
-        due_date_str = request.form.get('due_date')
-        due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None
+        payload = {
+            'title': request.form.get('title'),
+            'description': request.form.get('description'),
+            'priority': request.form.get('priority'),
+            'category': request.form.get('category'),
+            'status': request.form.get('status', 'Pending'),
+            'due_date': request.form.get('due_date'),
+            'is_recurring': request.form.get('is_recurring'),
+            'recurrence_interval': request.form.get('recurrence_interval'),
+            'recurrence_unit': request.form.get('recurrence_unit'),
+            'reminder_days_ahead': request.form.get('reminder_days_ahead'),
+        }
+
+        try:
+            sanitized = TaskService.validate_task_payload(payload)
+        except ValueError as exc:
+            flash(str(exc), 'warning')
+            return render_template('task_form.html', task=None)
 
         task = Task(
-            title=title, description=description,
-            priority=priority, category=category,
-            due_date=due_date, user_id=current_user.id
+            title=sanitized['title'],
+            description=sanitized['description'] or None,
+            priority=sanitized['priority'],
+            category=sanitized['category'],
+            status=sanitized['status'],
+            due_date=sanitized['due_date'],
+            is_recurring=sanitized['is_recurring'],
+            recurrence_interval=sanitized['recurrence_interval'],
+            recurrence_unit=sanitized['recurrence_unit'],
+            reminder_days_ahead=sanitized['reminder_days_ahead'],
+            user_id=current_user.id,
         )
         db.session.add(task)
         db.session.commit()
@@ -56,13 +80,35 @@ def edit_task(id):
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
-        task.title       = request.form.get('title')
-        task.description = request.form.get('description')
-        task.priority    = request.form.get('priority')
-        task.category    = request.form.get('category')
-        task.status      = request.form.get('status')
-        due_date_str     = request.form.get('due_date')
-        task.due_date    = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None
+        payload = {
+            'title': request.form.get('title'),
+            'description': request.form.get('description'),
+            'priority': request.form.get('priority'),
+            'category': request.form.get('category'),
+            'status': request.form.get('status'),
+            'due_date': request.form.get('due_date'),
+            'is_recurring': request.form.get('is_recurring'),
+            'recurrence_interval': request.form.get('recurrence_interval'),
+            'recurrence_unit': request.form.get('recurrence_unit'),
+            'reminder_days_ahead': request.form.get('reminder_days_ahead'),
+        }
+
+        try:
+            sanitized = TaskService.validate_task_payload(payload)
+        except ValueError as exc:
+            flash(str(exc), 'warning')
+            return render_template('task_form.html', task=task)
+
+        task.title = sanitized['title']
+        task.description = sanitized['description'] or None
+        task.priority = sanitized['priority']
+        task.category = sanitized['category']
+        task.status = sanitized['status']
+        task.due_date = sanitized['due_date']
+        task.is_recurring = sanitized['is_recurring']
+        task.recurrence_interval = sanitized['recurrence_interval']
+        task.recurrence_unit = sanitized['recurrence_unit']
+        task.reminder_days_ahead = sanitized['reminder_days_ahead']
         db.session.commit()
         flash('Task updated!', 'success')
         return redirect(url_for('main.index'))
@@ -79,6 +125,8 @@ def complete_task(id):
         flash('Permission denied.', 'danger')
         return redirect(url_for('main.index'))
     task.status = 'Completed' if task.status != 'Completed' else 'Pending'
+    if task.is_recurring and task.status == 'Completed':
+        ProductivityService.create_recurring_task(task)
     db.session.commit()
     return redirect(url_for('main.index'))
 
