@@ -227,6 +227,163 @@ body::before {
 }
 
 /* ── Stats Bar ──────────────────────────────────────────────── */
+.analytics-panel {
+  background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(6,182,212,0.08));
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.analytics-header h2 {
+  font-size: 1.25rem;
+  margin-top: 0.2rem;
+}
+
+.analytics-badge {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.8rem;
+  color: var(--text-main);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.mini-stat {
+  background: rgba(6, 11, 22, 0.36);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+
+.mini-stat-label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.mini-stat strong {
+  font-size: 1.3rem;
+}
+
+.workspace-section {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.notification-panel, .insight-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1rem;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+}
+
+.panel-header h3 {
+  font-size: 1rem;
+}
+
+.panel-header span {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.notification-list, .insight-list {
+  list-style: none;
+}
+
+.notification-list li {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.notification-list li:last-child {
+  border-bottom: none;
+}
+
+.notification-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 0.5rem;
+  background: var(--secondary);
+  display: inline-block;
+}
+
+.notification-dot.info { background: var(--secondary); }
+.notification-dot.warning { background: var(--warning); }
+.notification-dot.success { background: var(--success); }
+
+.notification-list strong {
+  display: block;
+  font-size: 0.82rem;
+}
+
+.notification-list p {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+.empty-mini {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 0.35rem 0;
+}
+
+.insight-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.insight-list li:last-child {
+  border-bottom: none;
+}
+
+.insight-list strong {
+  color: var(--text-main);
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -574,6 +731,52 @@ body::before {
 
 .form-control::placeholder { color: var(--text-faint); }
 .form-control option { background: #1e2233; }
+
+.toggle-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  margin-top: 0.2rem;
+}
+
+.toggle-wrap input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 4px;
+  top: 4px;
+  border-radius: 50%;
+  background: white;
+  transition: var(--transition);
+}
+
+.toggle-wrap input:checked + .toggle-slider {
+  background: rgba(16,185,129,0.25);
+  border-color: rgba(16,185,129,0.5);
+}
+
+.toggle-wrap input:checked + .toggle-slider::before {
+  transform: translateX(22px);
+  background: var(--success);
+}
 
 textarea.form-control { resize: vertical; min-height: 110px; }
 
