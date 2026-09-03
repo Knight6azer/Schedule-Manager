@@ -5,7 +5,35 @@
 
 {% block content %}
 
-<!-- ── Stats Bar ─────────────────────────────────────────── -->
+<!-- ── Analytics Overview ───────────────────────────────────── -->
+<div class="analytics-panel">
+    <div class="analytics-header">
+        <div>
+            <div class="eyebrow">Productivity overview</div>
+            <h2>Workspace performance</h2>
+        </div>
+        <div class="analytics-badge">{{ analytics.completion_rate }}% completion</div>
+    </div>
+    <div class="analytics-grid">
+        <div class="mini-stat">
+            <span class="mini-stat-label">Overdue</span>
+            <strong>{{ analytics.overdue }}</strong>
+        </div>
+        <div class="mini-stat">
+            <span class="mini-stat-label">Recurring</span>
+            <strong>{{ analytics.recurring }}</strong>
+        </div>
+        <div class="mini-stat">
+            <span class="mini-stat-label">Focus</span>
+            <strong>{{ analytics.in_progress }}</strong>
+        </div>
+        <div class="mini-stat">
+            <span class="mini-stat-label">Done</span>
+            <strong>{{ analytics.completed }}</strong>
+        </div>
+    </div>
+</div>
+
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-icon total">
@@ -59,6 +87,41 @@
             <div class="stat-value" id="stat-completed">{{ stats.completed }}</div>
             <div class="stat-label">Completed</div>
         </div>
+    </div>
+</div>
+
+<div class="workspace-section">
+    <div class="notification-panel">
+        <div class="panel-header">
+            <h3>Reminders</h3>
+            <span>{{ notifications|length }} active</span>
+        </div>
+        {% if notifications %}
+            <ul class="notification-list">
+                {% for note in notifications %}
+                    <li>
+                        <span class="notification-dot {{ note.notification_type }}"></span>
+                        <div>
+                            <strong>{{ note.title }}</strong>
+                            <p>{{ note.message }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-mini">No active reminders.</div>
+        {% endif %}
+    </div>
+
+    <div class="insight-panel">
+        <div class="panel-header">
+            <h3>Focus insights</h3>
+        </div>
+        <ul class="insight-list">
+            <li><span>Priority load</span><strong>{{ analytics.pending }} pending</strong></li>
+            <li><span>Recurring flow</span><strong>{{ analytics.recurring }} active</strong></li>
+            <li><span>Completion </span><strong>{{ analytics.completion_rate }}%</strong></li>
+        </ul>
     </div>
 </div>
 
