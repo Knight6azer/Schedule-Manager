@@ -220,7 +220,7 @@ def run_comprehensive_tests():
         
         # ====== 14. LOGOUT ======
         print("  Testing Logout...")
-        r = client.get('/auth/logout', follow_redirects=True)
+        r = client.post('/auth/logout', follow_redirects=True)
         # Logout redirects to login, which should eventually give 200
         assert r.status_code in [200, 302, 303], f"Logout failed: {r.status_code}"
         results.append(("PASS: User Logout", "PASS"))
