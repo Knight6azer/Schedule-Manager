@@ -135,6 +135,15 @@ body::before {
   position: relative;
 }
 
+.nav-item-form { margin: 0; }
+.nav-item-form .nav-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
 .nav-item:hover {
   background: rgba(255,255,255,0.06);
   color: var(--text-main);

@@ -5,6 +5,11 @@
 
 // ── Toast System ─────────────────────────────────────────────
 const toastContainer = document.getElementById('toast-container');
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+function csrfHeaders() {
+  return csrfToken ? { 'X-CSRFToken': csrfToken } : {};
+}
 
 function showToast(message, type = 'info', duration = 3500) {
   const icons = {
@@ -56,7 +61,7 @@ document.querySelectorAll('.server-flash').forEach(el => {
 // ── AJAX Task Toggle ──────────────────────────────────────────
 async function toggleTask(id, cardEl) {
   try {
-    const res  = await fetch(`/api/tasks/${id}/toggle`, { method: 'PATCH' });
+    const res  = await fetch(`/api/tasks/${id}/toggle`, { method: 'PATCH', headers: csrfHeaders() });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed');
 
@@ -95,7 +100,7 @@ async function deleteTask(id, cardEl, btn) {
   btn.disabled = true;
 
   try {
-    const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers: csrfHeaders() });
     if (!res.ok) throw new Error();
 
     cardEl.classList.add('removing');

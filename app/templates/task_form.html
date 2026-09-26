@@ -13,6 +13,7 @@
         </div>
 
         <form method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
             <div class="form-group">
                 <label class="form-label" for="title">Task Title *</label>
                 <input class="form-control" type="text" id="title" name="title" value="{{ task.title if task else '' }}"

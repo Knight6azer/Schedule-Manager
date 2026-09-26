@@ -32,10 +32,10 @@ class Config:
     PREFERRED_URL_SCHEME = 'https' if os.environ.get('VERCEL') else 'http'
 
     # Harden session cookies for HTTPS (Vercel) without breaking local dev
-    SESSION_COOKIE_SECURE   = bool(os.environ.get('VERCEL'))
+    SESSION_COOKIE_SECURE   = bool(os.environ.get('VERCEL') or os.environ.get('FLASK_ENV') == 'production')
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    REMEMBER_COOKIE_SECURE   = bool(os.environ.get('VERCEL'))
+    REMEMBER_COOKIE_SECURE   = bool(os.environ.get('VERCEL') or os.environ.get('FLASK_ENV') == 'production')
     REMEMBER_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_SAMESITE = 'Lax'
     REMEMBER_COOKIE_DURATION = timedelta(days=30)

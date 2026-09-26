@@ -43,6 +43,7 @@
             <div class="auth-form-sub">Join Schedule.AI and start managing your time smarter.</div>
 
             <form method="POST">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
                 <div class="form-group">
                     <label class="form-label" for="username">Username</label>
                     <input class="form-control" type="text" id="username" name="username" required

@@ -1,5 +1,9 @@
 
-from flask import Flask, g, request
+import os
+import secrets
+from hmac import compare_digest
+
+from flask import Flask, g, jsonify, request, session
 from sqlalchemy import inspect, text
 from config import Config
 from app.extensions import db, login_manager
@@ -8,6 +12,17 @@ from app.extensions import db, login_manager
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    is_production = (
+        os.environ.get('VERCEL')
+        or os.environ.get('FLASK_ENV') == 'production'
+        or os.environ.get('DEPLOYMENT_ENV') == 'production'
+    )
+    if is_production and (
+        not os.environ.get('SECRET_KEY')
+        or len(app.config['SECRET_KEY']) < 32
+        or app.config['SECRET_KEY'] == 'dev-secret-key-change-in-production'
+    ):
+        raise RuntimeError('A strong SECRET_KEY environment variable is required in production.')
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -19,6 +34,28 @@ def create_app(config_class=Config):
     app.register_blueprint(main)
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(api, url_prefix='/api')
+
+    @app.context_processor
+    def inject_csrf_token():
+        token = session.get('_csrf_token')
+        if token is None:
+            token = secrets.token_urlsafe(32)
+            session['_csrf_token'] = token
+        return {'csrf_token': token}
+
+    @app.before_request
+    def validate_csrf_token():
+        if app.testing:
+            return None
+        if request.method not in {'POST', 'PUT', 'PATCH', 'DELETE'}:
+            return None
+        expected = session.get('_csrf_token')
+        supplied = request.headers.get('X-CSRFToken') or request.form.get('_csrf_token')
+        if expected and supplied and compare_digest(expected, supplied):
+            return None
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'CSRF validation failed'}), 400
+        return 'CSRF validation failed', 400
 
     @app.after_request
     def add_security_and_cache_headers(response):
