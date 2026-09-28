@@ -4,31 +4,23 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.x-blue.svg)
 ![Flask](https://img.shields.io/badge/flask-3.x-green.svg)
-![Deployed on Vercel](https://img.shields.io/badge/deployed%20on-Vercel-black?logo=vercel)
-![Status](https://img.shields.io/badge/status-active-success.svg)
-
-A professional, full-featured task management web application built with **Python & Flask**. Features a dark glassmorphism UI, sidebar navigation, AJAX-driven interactions, live filtering, and a real-time stats dashboard — all with per-user task isolation and secure authentication.
+Schedule Manager is a Flask web application for organizing personal tasks. It supports account registration, task priorities, categories, due dates, status changes, search, and filtering, with task data stored through SQLAlchemy.
 
 ---
 
 ## 🚀 Key Features
 
-- **User Authentication** — Secure registration & login with full input validation (empty-field checks, min-length rules, friendly duplicate-email/username messages).
+- **Account access** — Registration and login with password hashing, server-side validation, and session-based access.
 - **Per-User Task Isolation** — Every user sees only their own tasks.
-- **Professional Dark UI** — Glassmorphism design system with a fixed sidebar, Google Inter font, smooth transitions, and CSS custom properties.
-- **Real-Time Dashboard** — Stats bar (Total / Pending / In Progress / Completed) that refreshes after every AJAX action.
-- **AJAX Interactions** — Toggle task status and delete tasks without any page reload; animated card removal.
-- **Live Filtering** — Filter tasks by status tab, free-text search, category, and priority — all client-side, instant.
-- **Toast Notifications** — Animated top-right toast system for all feedback (success, danger, info).
-- **Full Task CRUD**:
-  - **Priority**: High · Medium · Low (colour-coded card border)
-  - **Category**: General · Work · Personal · Study · Health
-  - **Status**: Pending · In Progress · Completed
-  - **Due Date** tracking
-- **RESTful JSON API** — Available at `/api/tasks` for external integrations.
-- **Vercel-Ready** — `vercel.json` with static asset serving, session-cookie hardening, optimised DB init guard, and ephemeral `/tmp` DB fallback included.
-- **Responsive** — Sidebar collapses to a hamburger menu on mobile.
+- **Task management** — Create, edit, complete, and delete tasks with a title, optional description, priority, category, status, and due date.
+- **Task overview** — Due dates, overdue state, task status, and priority are visible in the dashboard; task summaries update after AJAX actions.
+- **Search and filters** — Filter by status, category, and priority; search task titles.
+- **Responsive interface** — Mobile navigation, task list, filters, and forms adapt to narrow viewports.
+- **Session security** — Unsafe form/API requests require a session CSRF token; production session cookies are HTTPS-only.
+- **JSON API** — Session-authenticated task and statistics endpoints under `/api`.
 - **SQLAlchemy 2.0 compatible** — Uses `db.session.get()` throughout; timezone-aware timestamps via `datetime.now(timezone.utc)`.
+
+The database contains recurrence and notification-related fields and service methods. Recurrence creation is tied to task completion; reminder generation has no scheduler wired into this application and should not be treated as an active delivery feature.
 
 ---
 
@@ -40,7 +32,7 @@ A professional, full-featured task management web application built with **Pytho
 | Database | SQLite (local) · PostgreSQL (production via `DATABASE_URL`) |
 | Frontend | HTML5, Vanilla CSS (custom design system), Vanilla JS (AJAX + live filter), Jinja2 |
 | Auth | Werkzeug password hashing, Flask-Login |
-| Deployment | Vercel (serverless), Gunicorn (traditional) |
+| Deployment | Gunicorn; Vercel configuration requires an external persistent database |
 
 ---
 
@@ -63,13 +55,14 @@ Schedule Manager (Py)/
 │   │   └── routes.py        # JSON API: CRUD + toggle + stats + filtered list
 │   ├── templates/
 │   │   ├── base.html        # Sidebar app shell (auth pages use auth_content block)
-│   │   ├── index.html       # Dashboard: stats bar + filter bar + task grid
+│   │   ├── index.html       # Task dashboard, summary, filters, and task list
 │   │   ├── login.html       # Split-panel login page
 │   │   ├── register.html    # Split-panel register page
-│   │   └── task_form.html   # Create / Edit task form
+│   │   ├── task_form.html   # Create / Edit task form
+│   │   └── error.html       # Safe 4xx/5xx feedback
 │   └── static/
-│       ├── css/style.css    # Full design system (CSS custom properties, glassmorphism)
-│       └── js/script.js     # AJAX toggle/delete, live filter, toasts, sidebar toggle
+│       ├── css/style.css    # Responsive design tokens and components
+│       └── js/script.js     # AJAX task actions, filters, feedback, mobile navigation
 ├── config.py                # Config: SECRET_KEY, DB URI, session cookie hardening
 ├── run.py                   # Entry point — calls create_app()
 ├── vercel.json              # Vercel serverless deployment config (with static asset serving)
@@ -114,11 +107,24 @@ Schedule Manager (Py)/
 
 5. **Open in browser:** `http://127.0.0.1:5000`
 
+Direct `python run.py` startup selects development mode and binds to localhost. Production WSGI startup fails closed unless `SECRET_KEY` is set to a random value of at least 32 characters.
+
+### Tests
+
+Run the focused unit/integration suite and the comprehensive feature checks:
+
+```bash
+python -m unittest discover -s tests -v
+python comprehensive_test.py
+```
+
+The tests use in-memory SQLite databases and do not require production credentials.
+
 ---
 
 ## 🔌 API Reference
 
-All endpoints require an authenticated session. Responses are JSON.
+All endpoints require an authenticated session. Mutation requests also require the session CSRF token in an `X-CSRFToken` header. Server-rendered pages expose it through a `csrf-token` meta element.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -158,29 +164,32 @@ All endpoints require an authenticated session. Responses are JSON.
 
 ---
 
-## 🚀 Deployment — Vercel
+## Production deployment
 
-The project ships with a `vercel.json` configuration. Key notes:
+Run behind an HTTPS-terminating reverse proxy using Gunicorn. The provided `Procfile` sets `APP_ENV=production`. Production WSGI startup requires:
 
-- **Static Assets** — CSS and JS files are served directly by Vercel's CDN via a dedicated static route, avoiding Python cold-start latency for asset requests.
-- **Session Cookies** — `config.py` sets `SESSION_COOKIE_SECURE=True` and `SESSION_COOKIE_SAMESITE='Lax'` automatically when the `VERCEL` env var is detected, preventing login-loop issues over HTTPS.
-- **Session Protection** — Uses `'basic'` mode in Flask-Login to prevent session token regeneration that causes redirect loops on stateless serverless deployments.
-- **Database Init Guard** — `@app.before_request` calls `db.create_all()` once per container process (not on every request) using a per-process flag. This handles Vercel's ephemeral container model while avoiding per-request overhead.
-- **Database** — On Vercel, SQLite is stored at `/tmp/schedule_v2.db` (ephemeral — data lost on cold starts). Set a `DATABASE_URL` env var (Neon, Supabase, etc.) for persistence.
-- **Connection Pooling** — `pool_pre_ping=True` and `pool_recycle=280` are automatically enabled when `DATABASE_URL` is set, guarding against Neon's 5-minute idle connection timeout. These options are skipped for SQLite (which uses `NullPool`).
+| Variable | Requirement | Purpose |
+|----------|-------------|---------|
+| `APP_ENV` | `production` | Enables production secret validation and secure cookies |
+| `SECRET_KEY` | Required; random, at least 32 characters | Signs Flask sessions |
+| `DATABASE_URL` | Required on Vercel; recommended for hosted production | Points to persistent storage |
 
-**Deploy steps:**
+Generate a key with `python -c "import secrets; print(secrets.token_urlsafe(48))"` and store it in the hosting provider's secret/environment settings. Never commit it. Vercel's writable `/tmp` storage is ephemeral, so the app refuses to use it as permanent task storage; configure `DATABASE_URL` to a managed PostgreSQL database. Local development uses a SQLite file.
+
+The WSGI command is:
+
 ```bash
-npm install -g vercel   # install Vercel CLI (one-time)
-vercel                  # deploy from project root
+APP_ENV=production gunicorn run:app
 ```
 
-**Required Vercel environment variables:**
+Set `APP_ENV=production`, `SECRET_KEY`, and `DATABASE_URL` in the hosting provider's environment configuration before startup. Schema setup currently uses `db.create_all()` and a small in-app compatibility migration; this is not a versioned migration system. Back up hosted data and plan a migration strategy before schema changes.
 
-| Variable | Purpose |
-|----------|---------|
-| `SECRET_KEY` | Session signing key (any long random string) |
-| `DATABASE_URL` | Hosted PostgreSQL URI for persistent data (recommended) |
+### Known limitations
+
+- Reminder fields and notification endpoints exist, but no background scheduler is wired into this app to generate or deliver reminders automatically.
+- Recurring task instances are created when a recurring task is completed. Monthly recurrence currently advances in fixed 30-day intervals.
+- No automated browser/viewport test runner is configured; responsive behavior still requires manual browser checks at target widths.
+- The project does not include a formal, versioned database migration tool.
 
 ---
 
