@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ status_code }} — Schedule Manager{% endblock %}
+{% block page_title %}Something went wrong{% endblock %}
+
+{% set error_content %}
+<section class="error-state" aria-labelledby="error-title">
+    <p class="eyebrow">Error {{ status_code }}</p>
+    <h1 id="error-title">{{ message }}</h1>
+    <p>You can return to your schedule or try again in a moment.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">Back to Schedule Manager</a>
+</section>
+{% endset %}
+
+{% block content %}{{ error_content }}{% endblock %}
+{% block auth_content %}{{ error_content }}{% endblock %}
