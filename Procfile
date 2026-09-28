@@ -1,2 +1,2 @@
 
-web: gunicorn run:app
+web: APP_ENV=production gunicorn run:app
