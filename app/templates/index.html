@@ -1,38 +1,22 @@
 {% extends 'base.html' %}
 
 {% block title %}Dashboard — Schedule Manager{% endblock %}
-{% block page_title %}My Dashboard{% endblock %}
+{% block page_title %}Tasks{% endblock %}
 
 {% block content %}
 
-<!-- ── Analytics Overview ───────────────────────────────────── -->
-<div class="analytics-panel">
-    <div class="analytics-header">
-        <div>
-            <div class="eyebrow">Productivity overview</div>
-            <h2>Workspace performance</h2>
-        </div>
-        <div class="analytics-badge">{{ analytics.completion_rate }}% completion</div>
+<section class="dashboard-heading" aria-labelledby="dashboard-title">
+    <div>
+        <p class="eyebrow">Your schedule</p>
+        <h1 id="dashboard-title">Tasks</h1>
+        <p class="dashboard-summary">
+            {% if analytics.overdue %}{{ analytics.overdue }} overdue{% else %}No overdue tasks{% endif %}
+        </p>
     </div>
-    <div class="analytics-grid">
-        <div class="mini-stat">
-            <span class="mini-stat-label">Overdue</span>
-            <strong>{{ analytics.overdue }}</strong>
-        </div>
-        <div class="mini-stat">
-            <span class="mini-stat-label">Recurring</span>
-            <strong>{{ analytics.recurring }}</strong>
-        </div>
-        <div class="mini-stat">
-            <span class="mini-stat-label">Focus</span>
-            <strong>{{ analytics.in_progress }}</strong>
-        </div>
-        <div class="mini-stat">
-            <span class="mini-stat-label">Done</span>
-            <strong>{{ analytics.completed }}</strong>
-        </div>
-    </div>
-</div>
+    <a href="{{ url_for('main.add_task') }}" class="btn btn-primary">
+        <span aria-hidden="true">+</span> Add task
+    </a>
+</section>
 
 <div class="stats-grid">
     <div class="stat-card">
@@ -90,49 +74,14 @@
     </div>
 </div>
 
-<div class="workspace-section">
-    <div class="notification-panel">
-        <div class="panel-header">
-            <h3>Reminders</h3>
-            <span>{{ notifications|length }} active</span>
-        </div>
-        {% if notifications %}
-            <ul class="notification-list">
-                {% for note in notifications %}
-                    <li>
-                        <span class="notification-dot {{ note.notification_type }}"></span>
-                        <div>
-                            <strong>{{ note.title }}</strong>
-                            <p>{{ note.message }}</p>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <div class="empty-mini">No active reminders.</div>
-        {% endif %}
-    </div>
-
-    <div class="insight-panel">
-        <div class="panel-header">
-            <h3>Focus insights</h3>
-        </div>
-        <ul class="insight-list">
-            <li><span>Priority load</span><strong>{{ analytics.pending }} pending</strong></li>
-            <li><span>Recurring flow</span><strong>{{ analytics.recurring }} active</strong></li>
-            <li><span>Completion </span><strong>{{ analytics.completion_rate }}%</strong></li>
-        </ul>
-    </div>
-</div>
-
 <!-- ── Filter Bar ─────────────────────────────────────────── -->
 <div class="filter-bar">
     <!-- Status tabs -->
-    <div class="filter-tabs">
-        <button class="filter-tab active" data-status="">All</button>
-        <button class="filter-tab" data-status="Pending">Pending</button>
-        <button class="filter-tab" data-status="In Progress">In Progress</button>
-        <button class="filter-tab" data-status="Completed">Done</button>
+    <div class="filter-tabs" role="group" aria-label="Filter tasks by status">
+        <button class="filter-tab active" type="button" data-status="" aria-pressed="true">All</button>
+        <button class="filter-tab" type="button" data-status="Pending" aria-pressed="false">Pending</button>
+        <button class="filter-tab" type="button" data-status="In Progress" aria-pressed="false">In Progress</button>
+        <button class="filter-tab" type="button" data-status="Completed" aria-pressed="false">Completed</button>
     </div>
 
     <!-- Search -->
@@ -141,54 +90,60 @@
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <input class="search-input" id="search-input" type="text" placeholder="Search tasks…">
+        <label class="sr-only" for="search-input">Search tasks</label>
+        <input class="search-input" id="search-input" type="search" placeholder="Search tasks">
     </div>
 
     <!-- Category filter -->
+    <label class="sr-only" for="category-filter">Filter by category</label>
     <select class="filter-select" id="category-filter">
         <option value="">All Categories</option>
-        <option value="General">📝 General</option>
-        <option value="Work">💼 Work</option>
-        <option value="Personal">🏠 Personal</option>
-        <option value="Study">📚 Study</option>
-        <option value="Health">💪 Health</option>
+        <option value="General">General</option>
+        <option value="Work">Work</option>
+        <option value="Personal">Personal</option>
+        <option value="Study">Study</option>
+        <option value="Health">Health</option>
     </select>
 
     <!-- Priority filter -->
+    <label class="sr-only" for="priority-filter">Filter by priority</label>
     <select class="filter-select" id="priority-filter">
         <option value="">All Priorities</option>
-        <option value="High">🔥 High</option>
-        <option value="Medium">⚡ Medium</option>
-        <option value="Low">☕ Low</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
     </select>
 </div>
 
 <!-- ── Task Grid ──────────────────────────────────────────── -->
+<h2 class="sr-only" id="task-list-heading">Task list</h2>
 <div class="tasks-grid" id="tasks-grid">
     {% if tasks %}
     {% for task in tasks %}
-    <div class="task-card priority-{{ task.priority | lower }}
+    <article class="task-card priority-{{ task.priority | lower }}
                 {% if task.status == 'Completed' %}status-completed{% endif %}" data-title="{{ task.title | lower }}"
         data-status="{{ task.status }}" data-category="{{ task.category }}" data-priority="{{ task.priority }}"
-        id="task-card-{{ task.id }}">
+        id="task-card-{{ task.id }}" aria-labelledby="task-title-{{ task.id }}">
 
         <!-- Top row: check + title + priority badge -->
         <div class="task-card-top">
-            <div class="task-check {% if task.status == 'Completed' %}done{% endif %}"
-                onclick="toggleTask({{ task.id }}, this.closest('.task-card'))" title="Toggle complete">
+            <button type="button" class="task-check {% if task.status == 'Completed' %}done{% endif %}"
+                data-task-action="toggle" data-task-id="{{ task.id }}"
+                aria-label="{{ 'Reopen' if task.status == 'Completed' else 'Complete' }} task: {{ task.title }}"
+                aria-pressed="{{ 'true' if task.status == 'Completed' else 'false' }}">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                     <polyline points="20 6 9 17 4 12" />
                 </svg>
-            </div>
+            </button>
             <div class="task-title-wrap">
-                <div class="task-title {% if task.status == 'Completed' %}done{% endif %}">{{ task.title }}</div>
+                <h3 id="task-title-{{ task.id }}" class="task-title {% if task.status == 'Completed' %}done{% endif %}">{{ task.title }}</h3>
             </div>
-            <span class="chip chip-priority-{{ task.priority | lower }}">{{ task.priority }}</span>
+            <span class="chip chip-priority-{{ task.priority | lower }}">Priority: {{ task.priority }}</span>
         </div>
 
         <!-- Description -->
         {% if task.description %}
-        <div class="task-desc">{{ task.description }}</div>
+        <p class="task-desc">{{ task.description }}</p>
         {% endif %}
 
         <!-- Chips row -->
@@ -204,13 +159,8 @@
             <span class="chip chip-category">{{ task.category }}</span>
             <!-- Due date -->
             {% if task.due_date %}
-            <span class="chip chip-date">
-                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
+            <span class="chip chip-date{% if task.status != 'Completed' and task.due_date < today %} overdue{% endif %}">
+                {% if task.status != 'Completed' and task.due_date < today %}Overdue · {% endif %}
                 {{ task.due_date.strftime('%b %d, %Y') }}
             </span>
             {% endif %}
@@ -225,7 +175,9 @@
                 </svg>
                 Edit
             </a>
-            <button class="btn btn-danger btn-sm" onclick="deleteTask({{ task.id }}, this.closest('.task-card'), this)">
+            <button type="button" class="btn btn-danger btn-sm"
+                aria-label="Delete task: {{ task.title }}"
+                data-task-action="delete" data-task-id="{{ task.id }}">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6l-1 14H6L5 6" />
@@ -235,16 +187,15 @@
                 </svg>
                 Delete
             </button>
-        </div>
+        </article>
     </div>
     {% endfor %}
     {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">📋</div>
+    <div class="empty-state" id="empty-state" role="status">
         <h3>No tasks yet</h3>
-        <p>You have a clean slate. Add your first task to get started.</p>
+        <p>Add a task to keep your schedule up to date.</p>
         <a href="{{ url_for('main.add_task') }}" class="btn btn-primary">
-            + Create First Task
+            Add your first task
         </a>
     </div>
     {% endif %}
