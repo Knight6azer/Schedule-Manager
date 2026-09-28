@@ -1,6 +1,7 @@
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, current_app, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
+from email_validator import EmailNotValidError, validate_email
 from urllib.parse import urlparse, urljoin
 from app.models import User
 from app.extensions import db
@@ -58,7 +59,7 @@ def register():
 
     if request.method == 'POST':
         username = (request.form.get('username') or '').strip()
-        email    = (request.form.get('email')    or '').strip()
+        email    = (request.form.get('email')    or '').strip().lower()
         password =  request.form.get('password') or ''
 
         # ── Input validation (before any DB access) ──────────────────────
@@ -70,8 +71,29 @@ def register():
             flash('Username must be at least 3 characters.', 'warning')
             return render_template('register.html')
 
+        if len(username) > 20:
+            flash('Username must be 20 characters or fewer.', 'warning')
+            return render_template('register.html')
+
+        if len(email) > 120:
+            flash('Email address must be 120 characters or fewer.', 'warning')
+            return render_template('register.html')
+
         if len(password) < 6:
             flash('Password must be at least 6 characters.', 'warning')
+            return render_template('register.html')
+
+        if len(password) > 128:
+            flash('Password must be 128 characters or fewer.', 'warning')
+            return render_template('register.html')
+
+        try:
+            email = validate_email(email, check_deliverability=False).normalized
+        except EmailNotValidError:
+            flash('Enter a valid email address.', 'warning')
+            return render_template('register.html')
+        if len(email) > 120:
+            flash('Email address must be 120 characters or fewer.', 'warning')
             return render_template('register.html')
 
         # ── Uniqueness checks (give friendly messages, not a generic DB error) ──
@@ -83,8 +105,8 @@ def register():
             if User.query.filter_by(username=username).first():
                 flash('That username is already taken. Please choose another.', 'danger')
                 return render_template('register.html')
-        except Exception as e:
-            print(f"[REGISTER] DB query error: {e}")
+        except Exception:
+            current_app.logger.exception('Could not check account uniqueness')
             flash('Database unavailable — please try again in a moment.', 'warning')
             return render_template('register.html')
 
@@ -94,10 +116,9 @@ def register():
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            print(f"[REGISTER] Commit error: {e}")
-            import traceback; traceback.print_exc()
+            current_app.logger.exception('Could not create account')
             flash('Could not create account — please try again.', 'danger')
             return render_template('register.html')
 
