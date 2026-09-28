@@ -19,7 +19,7 @@ def _get_db_uri():
             url = url.replace('postgres://', 'postgresql://', 1)
         return url
     if os.environ.get('VERCEL'):
-        return 'sqlite:////tmp/schedule_v2.db'
+        raise RuntimeError('DATABASE_URL is required on Vercel because its local filesystem is ephemeral.')
     return 'sqlite:///' + os.path.join(basedir, 'schedule_v2.db')
 
 
@@ -29,13 +29,19 @@ class Config:
     # Runtime defaults that keep the application predictable in local and hosted environments
     SESSION_COOKIE_NAME = os.environ.get('SESSION_COOKIE_NAME') or 'schedule_manager_session'
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
-    PREFERRED_URL_SCHEME = 'https' if os.environ.get('VERCEL') else 'http'
+    PREFERRED_URL_SCHEME = 'https' if (
+        os.environ.get('VERCEL') or os.environ.get('APP_ENV') == 'production'
+    ) else 'http'
 
-    # Harden session cookies for HTTPS (Vercel) without breaking local dev
-    SESSION_COOKIE_SECURE   = bool(os.environ.get('VERCEL') or os.environ.get('FLASK_ENV') == 'production')
+    # Production deployments are expected to terminate TLS before reaching Flask.
+    SESSION_COOKIE_SECURE   = bool(
+        os.environ.get('VERCEL') or os.environ.get('APP_ENV') == 'production'
+    )
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    REMEMBER_COOKIE_SECURE   = bool(os.environ.get('VERCEL') or os.environ.get('FLASK_ENV') == 'production')
+    REMEMBER_COOKIE_SECURE   = bool(
+        os.environ.get('VERCEL') or os.environ.get('APP_ENV') == 'production'
+    )
     REMEMBER_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_SAMESITE = 'Lax'
     REMEMBER_COOKIE_DURATION = timedelta(days=30)
