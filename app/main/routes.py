@@ -1,7 +1,10 @@
 
+from datetime import datetime, timezone
+
 from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
-from app.models import Task, Notification
+from sqlalchemy import case
+from app.models import Task
 from app.extensions import db
 from app.services.task_service import TaskService
 from app.services.productivity_service import ProductivityService
@@ -19,11 +22,25 @@ def healthz():
 def index():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
-    tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.due_date.asc()).all()
+    tasks = Task.query.filter_by(user_id=current_user.id).order_by(
+        (Task.status == 'Completed').asc(),
+        Task.due_date.asc().nullslast(),
+        case(
+            (Task.priority == 'High', 0),
+            (Task.priority == 'Medium', 1),
+            else_=2,
+        ),
+        Task.created_at.asc(),
+    ).all()
     stats = TaskService.build_task_statistics(tasks)
     analytics = ProductivityService.build_dashboard_analytics(tasks)
-    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).order_by(Notification.created_at.desc()).all()
-    return render_template('index.html', tasks=tasks, stats=stats, analytics=analytics, notifications=notifications)
+    return render_template(
+        'index.html',
+        tasks=tasks,
+        stats=stats,
+        analytics=analytics,
+        today=datetime.now(timezone.utc).date(),
+    )
 
 
 @main.route('/add', methods=['GET', 'POST'])
@@ -47,7 +64,7 @@ def add_task():
             sanitized = TaskService.validate_task_payload(payload)
         except ValueError as exc:
             flash(str(exc), 'warning')
-            return render_template('task_form.html', task=None)
+            return render_template('task_form.html', task=None, form_data=payload)
 
         task = Task(
             title=sanitized['title'],
@@ -90,14 +107,17 @@ def edit_task(id):
             'is_recurring': request.form.get('is_recurring'),
             'recurrence_interval': request.form.get('recurrence_interval'),
             'recurrence_unit': request.form.get('recurrence_unit'),
-            'reminder_days_ahead': request.form.get('reminder_days_ahead'),
+            'reminder_days_ahead': request.form.get(
+                'reminder_days_ahead',
+                task.reminder_days_ahead,
+            ),
         }
 
         try:
             sanitized = TaskService.validate_task_payload(payload)
         except ValueError as exc:
             flash(str(exc), 'warning')
-            return render_template('task_form.html', task=task)
+            return render_template('task_form.html', task=task, form_data=payload)
 
         task.title = sanitized['title']
         task.description = sanitized['description'] or None
