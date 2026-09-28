@@ -4,6 +4,7 @@
 {% block page_title %}{{ 'Edit Task' if task else 'New Task' }}{% endblock %}
 
 {% block content %}
+{% set values = form_data|default({}) %}
 <div class="form-container">
     <div class="form-card">
         <div class="form-title">{{ 'Edit Task' if task else 'Create New Task' }}</div>
@@ -16,59 +17,56 @@
             <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
             <div class="form-group">
                 <label class="form-label" for="title">Task Title *</label>
-                <input class="form-control" type="text" id="title" name="title" value="{{ task.title if task else '' }}"
-                    required placeholder="e.g. Finish quarterly report" autofocus>
+                <input class="form-control" type="text" id="title" name="title"
+                    value="{{ values.get('title', task.title if task else '') or '' }}"
+                    maxlength="100" required autocomplete="off" placeholder="e.g. Finish quarterly report" autofocus>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="description">Description</label>
                 <textarea class="form-control" id="description" name="description" rows="4"
-                    placeholder="Add any extra details, notes, or context…">{{ task.description if task else '' }}</textarea>
+                    placeholder="Add any extra details or context">{{ values.get('description', task.description if task else '') or '' }}</textarea>
             </div>
 
             <div class="form-grid-2">
                 <div class="form-group" style="margin-bottom:0">
                     <label class="form-label" for="priority">Priority</label>
+                    {% set selected_priority = values.get('priority', task.priority if task else 'Medium') %}
                     <select class="form-control" id="priority" name="priority">
-                        <option value="High" {% if task and task.priority=='High' %}selected{% endif %}>🔥 High</option>
-                        <option value="Medium" {% if (task and task.priority=='Medium' ) or not task %}selected{% endif
-                            %}>⚡ Medium</option>
-                        <option value="Low" {% if task and task.priority=='Low' %}selected{% endif %}>☕ Low</option>
+                        <option value="High" {% if selected_priority == 'High' %}selected{% endif %}>High</option>
+                        <option value="Medium" {% if selected_priority == 'Medium' %}selected{% endif %}>Medium</option>
+                        <option value="Low" {% if selected_priority == 'Low' %}selected{% endif %}>Low</option>
                     </select>
                 </div>
 
                 <div class="form-group" style="margin-bottom:0">
                     <label class="form-label" for="due_date">Due Date</label>
                     <input class="form-control" type="date" id="due_date" name="due_date"
-                        value="{{ task.due_date.strftime('%Y-%m-%d') if task and task.due_date else '' }}">
+                        value="{{ values.get('due_date', task.due_date.strftime('%Y-%m-%d') if task and task.due_date else '') or '' }}">
                 </div>
             </div>
 
             <div class="form-grid-2" style="margin-top:1.25rem">
                 <div class="form-group" style="margin-bottom:0">
                     <label class="form-label" for="category">Category</label>
+                    {% set selected_category = values.get('category', task.category if task else 'General') %}
                     <select class="form-control" id="category" name="category">
-                        <option value="General" {% if not task or task.category=='General' %}selected{% endif %}>📝
-                            General</option>
-                        <option value="Work" {% if task and task.category=='Work' %}selected{% endif %}>💼 Work</option>
-                        <option value="Personal" {% if task and task.category=='Personal' %}selected{% endif %}>🏠
-                            Personal</option>
-                        <option value="Study" {% if task and task.category=='Study' %}selected{% endif %}>📚 Study
-                        </option>
-                        <option value="Health" {% if task and task.category=='Health' %}selected{% endif %}>💪 Health
-                        </option>
+                        <option value="General" {% if selected_category == 'General' %}selected{% endif %}>General</option>
+                        <option value="Work" {% if selected_category == 'Work' %}selected{% endif %}>Work</option>
+                        <option value="Personal" {% if selected_category == 'Personal' %}selected{% endif %}>Personal</option>
+                        <option value="Study" {% if selected_category == 'Study' %}selected{% endif %}>Study</option>
+                        <option value="Health" {% if selected_category == 'Health' %}selected{% endif %}>Health</option>
                     </select>
                 </div>
 
                 {% if task %}
                 <div class="form-group" style="margin-bottom:0">
                     <label class="form-label" for="status">Status</label>
+                    {% set selected_status = values.get('status', task.status) %}
                     <select class="form-control" id="status" name="status">
-                        <option value="Pending" {% if task.status=='Pending' %}selected{% endif %}>⏳ Pending</option>
-                        <option value="In Progress" {% if task.status=='In Progress' %}selected{% endif %}>🚧 In
-                            Progress</option>
-                        <option value="Completed" {% if task.status=='Completed' %}selected{% endif %}>✅ Completed
-                        </option>
+                        <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="In Progress" {% if selected_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Completed" {% if selected_status == 'Completed' %}selected{% endif %}>Completed</option>
                     </select>
                 </div>
                 {% endif %}
@@ -76,29 +74,30 @@
 
             <div class="form-grid-2" style="margin-top:1.25rem">
                 <div class="form-group" style="margin-bottom:0">
-                    <label class="form-label" for="reminder_days_ahead">Reminder Window</label>
-                    <input class="form-control" type="number" id="reminder_days_ahead" name="reminder_days_ahead" min="1" max="30" value="{{ task.reminder_days_ahead if task and task.reminder_days_ahead else 1 }}">
-                </div>
-                <div class="form-group" style="margin-bottom:0">
-                    <label class="form-label" for="is_recurring">Recurring Task</label>
+                    <label class="form-label" for="is_recurring">Repeat this task</label>
                     <label class="toggle-wrap">
-                        <input type="checkbox" id="is_recurring" name="is_recurring" value="true" {% if task and task.is_recurring %}checked{% endif %}>
+                        <input type="checkbox" id="is_recurring" name="is_recurring" value="true"
+                            aria-label="Repeat this task"
+                            {% if values.get('is_recurring', task.is_recurring if task else false) in [true, 'true', 'on', '1'] %}checked{% endif %}>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
             </div>
 
-            <div class="form-grid-2" style="margin-top:1.25rem">
+            <div id="recurrence-fields" class="form-grid-2" style="margin-top:1.25rem"
+                {% if not values.get('is_recurring', task.is_recurring if task else false) %}hidden{% endif %}>
                 <div class="form-group" style="margin-bottom:0">
                     <label class="form-label" for="recurrence_interval">Repeat Every</label>
-                    <input class="form-control" type="number" id="recurrence_interval" name="recurrence_interval" min="1" max="30" value="{{ task.recurrence_interval if task and task.recurrence_interval else 1 }}">
+                    <input class="form-control" type="number" id="recurrence_interval" name="recurrence_interval"
+                        min="1" max="30" value="{{ values.get('recurrence_interval', task.recurrence_interval if task and task.recurrence_interval else 1) }}">
                 </div>
                 <div class="form-group" style="margin-bottom:0">
                     <label class="form-label" for="recurrence_unit">Unit</label>
+                    {% set selected_unit = values.get('recurrence_unit', task.recurrence_unit if task else 'day') %}
                     <select class="form-control" id="recurrence_unit" name="recurrence_unit">
-                        <option value="day" {% if not task or task.recurrence_unit == 'day' %}selected{% endif %}>Day</option>
-                        <option value="week" {% if task and task.recurrence_unit == 'week' %}selected{% endif %}>Week</option>
-                        <option value="month" {% if task and task.recurrence_unit == 'month' %}selected{% endif %}>Month</option>
+                        <option value="day" {% if selected_unit == 'day' %}selected{% endif %}>Day</option>
+                        <option value="week" {% if selected_unit == 'week' %}selected{% endif %}>Week</option>
+                        <option value="month" {% if selected_unit == 'month' %}selected{% endif %}>Month</option>
                     </select>
                 </div>
             </div>
