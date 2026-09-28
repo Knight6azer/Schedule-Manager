@@ -194,8 +194,8 @@ def run_comprehensive_tests():
         results.append(("PASS: Create Recurring Task", "PASS"))
         print("   PASS: Recurring task created\n")
         
-        # ====== 12. REMINDERS ======
-        print("  Testing Reminders...")
+        # ====== 12. LEGACY REMINDER FIELD ======
+        print("  Testing Reminder Window Data...")
         r = client.post('/add', data={
             'title': 'Client Presentation',
             'description': 'Important presentation',
@@ -206,8 +206,8 @@ def run_comprehensive_tests():
             'reminder_days_ahead': '2'
         }, follow_redirects=True)
         assert r.status_code == 200, f"Reminder task creation failed: {r.status_code}"
-        results.append(("PASS: Create Task with Reminder", "PASS"))
-        print("   PASS: Task with reminder created\n")
+        results.append(("PASS: Persist Reminder Window Field", "PASS"))
+        print("   PASS: Reminder window data persisted (delivery is not scheduled)\n")
         
         # ====== 13. NOTIFICATIONS ======
         print("  Testing Notifications...")
@@ -253,7 +253,7 @@ def run_comprehensive_tests():
         print(f"TOTAL: {passed_tests}/{total_tests} tests passed")
         
         if passed_tests == total_tests:
-            print("\nSUCCESS: ALL TESTS PASSED - PROJECT IS PRODUCTION READY!")
+            print("\nSUCCESS: ALL TESTS PASSED - THIS SUITE DOES NOT CERTIFY PRODUCTION READINESS.")
             print("="*70 + "\n")
             return 0
         else:
