@@ -3,7 +3,7 @@ import os
 import secrets
 from hmac import compare_digest
 
-from flask import Flask, g, jsonify, request, session
+from flask import Flask, abort, g, jsonify, render_template, request, session
 from sqlalchemy import inspect, text
 from config import Config
 from app.extensions import db, login_manager
@@ -12,17 +12,16 @@ from app.extensions import db, login_manager
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    is_production = (
-        os.environ.get('VERCEL')
-        or os.environ.get('FLASK_ENV') == 'production'
-        or os.environ.get('DEPLOYMENT_ENV') == 'production'
-    )
-    if is_production and (
-        not os.environ.get('SECRET_KEY')
-        or len(app.config['SECRET_KEY']) < 32
-        or app.config['SECRET_KEY'] == 'dev-secret-key-change-in-production'
+    is_test = app.config.get('TESTING', False)
+    is_development = os.environ.get('APP_ENV', '').lower() == 'development'
+    secret_key = os.environ.get('SECRET_KEY', '')
+    if not is_test and not is_development and (
+        len(secret_key) < 32
+        or secret_key == 'dev-secret-key-change-in-production'
     ):
-        raise RuntimeError('A strong SECRET_KEY environment variable is required in production.')
+        raise RuntimeError(
+            'Set SECRET_KEY to a random value of at least 32 characters for non-development deployments.'
+        )
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -55,16 +54,26 @@ def create_app(config_class=Config):
             return None
         if request.path.startswith('/api/'):
             return jsonify({'error': 'CSRF validation failed'}), 400
-        return 'CSRF validation failed', 400
+        return render_template(
+            'error.html',
+            status_code=400,
+            message='This form has expired. Reload the page and try again.',
+        ), 400
 
     @app.after_request
     def add_security_and_cache_headers(response):
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
+            "form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; font-src 'self'; connect-src 'self'"
+        )
 
         if request.path.startswith('/static/'):
-            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+            response.headers['Cache-Control'] = 'public, max-age=300, must-revalidate'
         else:
             response.headers['Cache-Control'] = 'no-store'
 
@@ -90,7 +99,36 @@ def create_app(config_class=Config):
             app._db_initialized = True
             g._db_created = True
         except Exception as e:
-            app.logger.error(f'Database initialization failed: {e}')
+            db.session.rollback()
+            app.logger.exception('Database initialization failed')
+            abort(503)
+
+    @app.errorhandler(404)
+    def not_found(_error):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Not found'}), 404
+        return render_template('error.html', status_code=404,
+                               message='That page could not be found.'), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(_error):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Something went wrong. Please try again.'}), 500
+        return render_template(
+            'error.html',
+            status_code=500,
+            message='Something went wrong. Please try again.',
+        ), 500
+
+    @app.errorhandler(503)
+    def service_unavailable(_error):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Schedule Manager is temporarily unavailable.'}), 503
+        return render_template(
+            'error.html',
+            status_code=503,
+            message='Schedule Manager is temporarily unavailable. Please try again shortly.',
+        ), 503
 
     return app
 
