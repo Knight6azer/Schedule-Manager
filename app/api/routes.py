@@ -1,6 +1,7 @@
 
 from flask import Blueprint, jsonify, request, abort
 from flask_login import login_required, current_user
+from sqlalchemy import case
 from app.models import Task, Notification
 from app.extensions import db
 from app.services.task_service import TaskService
@@ -27,14 +28,22 @@ def get_tasks():
     if category:
         query = query.filter_by(category=category)
 
-    tasks = query.order_by(Task.due_date.asc()).all()
+    tasks = query.order_by(
+        Task.due_date.asc().nullslast(),
+        case(
+            (Task.priority == 'High', 0),
+            (Task.priority == 'Medium', 1),
+            else_=2,
+        ),
+        Task.created_at.asc(),
+    ).all()
     return jsonify([t.to_dict() for t in tasks])
 
 
 @api.route('/tasks', methods=['POST'])
 @login_required
 def create_task():
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
     try:
         sanitized = TaskService.validate_task_payload(data)
     except ValueError as exc:
@@ -67,7 +76,9 @@ def update_task(id):
     if task.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Task payload must be a JSON object.'}), 400
     try:
         sanitized = TaskService.validate_task_payload({
             'title': data.get('title', task.title),
